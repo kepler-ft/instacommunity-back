@@ -6,11 +6,13 @@ import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.request.*
 
+import org.kepler42.models.Greeting
+
 fun Application.configureRouting() {
 
     routing {
         get("/") {
-                call.respondText("Hello Kepler!")
+                call.respond(Greeting(1, "Hello, Kepler!"))
             }
     }
 }
