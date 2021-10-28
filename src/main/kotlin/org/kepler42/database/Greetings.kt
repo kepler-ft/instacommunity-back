@@ -2,7 +2,7 @@ package org.kepler42.database
 
 import org.jetbrains.exposed.sql.*
 
-object Greeting : Table() {
+object Greetings : Table() {
     val id = long("id").autoIncrement()
     val phrase = varchar("phrase", length = 50)
 

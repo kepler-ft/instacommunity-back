@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 import io.ktor.application.*
 
-import org.kepler42.database.Greeting
+import org.kepler42.database.Greetings
 
 fun Application.configureDatabase() {
     createConnection()
@@ -23,6 +23,6 @@ fun createConnection() {
 fun createTable() {
     transaction {
         addLogger(StdOutSqlLogger)
-        SchemaUtils.create(Greeting)
+        SchemaUtils.create(Greetings)
     }
 }
