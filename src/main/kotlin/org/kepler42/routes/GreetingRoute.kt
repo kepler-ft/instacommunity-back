@@ -7,11 +7,17 @@ import io.ktor.response.*
 import io.ktor.request.*
 
 import org.kepler42.models.Greeting
+import org.kepler42.database.fetchGreeting
 
 fun Route.greetingRoute() {
     route("/greeting") {
         get ("{id?}") {
-            call.respond(Greeting(0, "Hello, Kepler!"))
+            val id = call.parameters["id"] ?: return@get call.respondText(
+                "Missing or malformed id.",
+                status = HttpStatusCode.BadRequest
+            )
+            val greeting = fetchGreeting(id.toLong())
+            call.respond(greeting!!)
         }
     }
 }
