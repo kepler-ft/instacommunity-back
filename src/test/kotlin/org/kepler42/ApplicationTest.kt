@@ -17,17 +17,5 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
 
 class ApplicationTest {
-    @Test
-    @kotlinx.serialization.ExperimentalSerializationApi
-    fun testRoot() {
-        withTestApplication({ configureRouting(); configureSerialization() }) {
-            handleRequest(HttpMethod.Get, "/").apply {
-                assertEquals(HttpStatusCode.OK, response.status())
-                assertEquals(
-                    Json.encodeToString(Greeting(1, "Hello, Kepler!")),
-                    response.content
-                )
-            }
-        }
-    }
+    /* ... */
 }
