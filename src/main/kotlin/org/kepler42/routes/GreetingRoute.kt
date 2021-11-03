@@ -16,8 +16,12 @@ fun Route.greetingRoute() {
                 "Missing or malformed id.",
                 status = HttpStatusCode.BadRequest
             )
-            val greeting = fetchGreeting(id.toLong())
-            call.respond(greeting!!)
+            val greeting = fetchGreeting(id.toLong()) 
+            
+            call.respond(greeting ?: return@get call.respondText(
+                "Greeting with id $id not found.",
+                status = HttpStatusCode.NotFound
+            ))
         }
     }
 }
