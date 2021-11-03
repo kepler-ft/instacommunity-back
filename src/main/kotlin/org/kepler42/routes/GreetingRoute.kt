@@ -23,5 +23,9 @@ fun Route.greetingRoute() {
                 status = HttpStatusCode.NotFound
             ))
         }
+        post {
+            val greeting = call.receive<Greeting>()
+            call.respond(greeting)
+        }
     }
 }
