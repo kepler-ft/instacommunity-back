@@ -8,6 +8,7 @@ import io.ktor.request.*
 
 import org.kepler42.models.Greeting
 import org.kepler42.database.fetchGreeting
+import org.kepler42.database.insertGreeting
 
 fun Route.greetingRoute() {
     route("/greeting") {
@@ -22,6 +23,11 @@ fun Route.greetingRoute() {
                 "Greeting with id $id not found.",
                 status = HttpStatusCode.NotFound
             ))
+        }
+        post {
+            val greeting = call.receive<Greeting>()
+            val newGreeting = insertGreeting(greeting)
+            call.respond(newGreeting)
         }
     }
 }

@@ -14,7 +14,7 @@ object Greetings : IntIdTable() {
 class GreetingEntity(id: EntityID<Int>): Entity<Int>(id) {
     companion object : EntityClass<Int, GreetingEntity>(Greetings)
 
-    val phrase by Greetings.phrase
+    var phrase by Greetings.phrase
     fun toModel(): Greeting {
         return Greeting(this.id.value.toLong(), this.phrase)
     }
