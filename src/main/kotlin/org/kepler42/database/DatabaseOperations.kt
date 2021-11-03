@@ -14,3 +14,11 @@ fun fetchGreeting(id: Long): Greeting? {
 
     return greeting?.toModel()
 }
+
+fun insertGreeting(greeting: Greeting): Greeting {
+    val newGreeting = transaction {
+        addLogger(StdOutSqlLogger)
+        GreetingEntity.new { phrase = greeting.phrase }
+    }
+    return newGreeting.toModel()
+}

@@ -8,6 +8,7 @@ import io.ktor.request.*
 
 import org.kepler42.models.Greeting
 import org.kepler42.database.fetchGreeting
+import org.kepler42.database.insertGreeting
 
 fun Route.greetingRoute() {
     route("/greeting") {
@@ -25,7 +26,8 @@ fun Route.greetingRoute() {
         }
         post {
             val greeting = call.receive<Greeting>()
-            call.respond(greeting)
+            val newGreeting = insertGreeting(greeting)
+            call.respond(newGreeting)
         }
     }
 }
