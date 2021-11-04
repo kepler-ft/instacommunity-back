@@ -6,7 +6,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import io.ktor.application.*
 
 import org.kepler42.database.Greetings
-// import com.sun.org.apache.xml.internal.utils.SystemIDResolver
 
 fun Application.configureDatabase() {
     createConnection()
