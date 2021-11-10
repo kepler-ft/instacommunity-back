@@ -9,7 +9,6 @@ import org.kepler42.database.Greetings
 
 fun Application.configureDatabase() {
     createConnection()
-    createTable()
 }
 
 fun createConnection() {
@@ -23,11 +22,4 @@ fun createConnection() {
         driver = "com.impossibl.postgres.jdbc.PGDriver",
         user = dbUser,
         password = dbPassword)
-}
-
-fun createTable() {
-    transaction {
-        addLogger(StdOutSqlLogger)
-        SchemaUtils.create(Greetings)
-    }
 }

@@ -10,6 +10,7 @@ import org.kepler42.routes.*
 
 fun Application.configureRouting() {
     routing {
-        greetingRoute()
+        // greetingRoute()
+        communityRoute()
     }
 }
