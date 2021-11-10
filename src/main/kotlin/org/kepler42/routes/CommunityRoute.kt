@@ -15,15 +15,15 @@ fun Route.communityRoute() {
         	post ("{id}/followers") {
 				try {
 					val user = call.receive<User>()
+					
 					val communityId = call.parameters["id"]
 					val response: UserCommunity = insertUsersCommunities(UserCommunity(
 						userId = user.id,
 						communityId = communityId!!.toInt()))
 					call.respond(response)
 				} catch (e: ExposedSQLException) {
-					TODO("Fazer o error handling aqui")
-				} catch (e: Exception) {
-					call.respondText("Deu muito ruim")
+					call.respond(mapOf("error" to "Deu ruim"))
+					TODO("Fazer o select antes de inserir")
 				}
 			}
     }
