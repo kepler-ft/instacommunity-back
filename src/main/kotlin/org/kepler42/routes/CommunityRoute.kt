@@ -27,8 +27,7 @@ fun Route.communityRoute() {
 						call.respond(HttpStatusCode.BadRequest, mapOf("error" to "User already follows this community"))
 					}
 				} catch (e: ExposedSQLException) {
-					call.respond(mapOf("error" to "Deu ruim"))
-					TODO("Fazer o select antes de inserir")
+					call.respond(mapOf("error" to "Something has gone pretty bad"))
 				}
 			}
 	}

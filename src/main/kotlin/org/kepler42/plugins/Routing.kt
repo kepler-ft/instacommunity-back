@@ -12,5 +12,6 @@ fun Application.configureRouting() {
     routing {
         // greetingRoute()
         communityRoute()
+        userRoute()
     }
 }
