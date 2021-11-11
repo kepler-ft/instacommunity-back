@@ -13,3 +13,10 @@ fun insertUsersCommunities(userCommunity: UserCommunity): UserCommunity {
     }
     return newUserCommunity.toModel()
 }
+
+fun checkAlreadyFollows(userId: Int, communityId: Int) : Boolean {
+    return transaction {
+        val follows = UserCommunityEntity.find { (UsersCommunities.user_id eq userId) and (UsersCommunities.community_id eq communityId) }
+        follows.any()
+    }
+}

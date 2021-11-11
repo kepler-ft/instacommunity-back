@@ -15,16 +15,21 @@ fun Route.communityRoute() {
         	post ("{id}/followers") {
 				try {
 					val user = call.receive<User>()
-					
 					val communityId = call.parameters["id"]
-					val response: UserCommunity = insertUsersCommunities(UserCommunity(
-						userId = user.id,
-						communityId = communityId!!.toInt()))
-					call.respond(response)
+
+					if (!checkAlreadyFollows(user.id, communityId!!.toInt())) {
+						val response: UserCommunity = insertUsersCommunities(UserCommunity(
+							userId = user.id,
+							communityId = communityId.toInt()))
+						call.respond(response)
+					} else {
+						println ("já existe")
+						call.respond(HttpStatusCode.BadRequest, mapOf("error" to "User already follows this community"))
+					}
 				} catch (e: ExposedSQLException) {
 					call.respond(mapOf("error" to "Deu ruim"))
 					TODO("Fazer o select antes de inserir")
 				}
 			}
-    }
+	}
 }
