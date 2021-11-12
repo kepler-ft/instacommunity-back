@@ -7,13 +7,12 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 
 import org.kepler42.models.*
 
-
-//object is the representation of the Table users
+// object is the representation of the Table users
 object Users : IntIdTable("users") {
 	val name = varchar("name", 200)
 }
 
-//this class represents the row from the table
+// this class represents the row from the table
 class UserEntity(id: EntityID<Int>): Entity<Int>(id) {
 	companion object : EntityClass<Int, UserEntity>(Users)
 
