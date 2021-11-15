@@ -45,11 +45,7 @@ fun Route.communityRoute() {
 			get ("{id}/followers") {
 				val communityId = call.parameters["id"]
 				val followers = fetchFollowers(communityId!!.toInt())
-				if (followers == null) {
-					call.respond<List<User>>(emptyList())
-				} else {
-					call.respond(followers)
-				}
+				call.respond(followers ?: emptyList())
 			}
 	}
 }
