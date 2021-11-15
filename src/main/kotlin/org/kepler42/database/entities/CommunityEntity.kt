@@ -19,6 +19,7 @@ class CommunityEntity(id: EntityID<Int>): Entity<Int>(id) {
 
 	var name by Communities.name
 	var description by Communities.description
+	var followers by UserEntity via UsersCommunities
 
 	fun toModel(): Community {
 		return Community(this.id.value, this.name, this.description)
