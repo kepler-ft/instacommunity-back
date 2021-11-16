@@ -7,10 +7,10 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.kepler42.database.entities.*
 import org.kepler42.models.*
 
-fun insertCommunities(user: Community): Community {
+fun insertCommunities(community: Community): Community {
     val newCommunity = transaction {
         addLogger(StdOutSqlLogger)
-        CommunityEntity.new { name = user.name }
+        CommunityEntity.new { name = community.name!! }
     }
     return newCommunity.toModel()
 }
@@ -47,4 +47,21 @@ fun fetchFollowers(id: Int): List<User>? {
         CommunityEntity.findById(id)?.followers?.map { it.toModel() }
     }
     return followers
+}
+
+fun updateCommunity(id: Int, community: Community): Community? {
+    return transaction {
+        addLogger(StdOutSqlLogger)
+        val oldCommunity = CommunityEntity.findById(id)
+        community.name?.let {
+            oldCommunity?.name = community.name
+        }
+        community.description?.let {
+            oldCommunity?.description = community.description
+        }
+        community.contact?.let {
+            oldCommunity?.contact = community.contact
+        }
+        oldCommunity?.toModel()
+    }
 }

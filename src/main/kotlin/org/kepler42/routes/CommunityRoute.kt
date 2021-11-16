@@ -47,5 +47,17 @@ fun Route.communityRoute() {
 				val followers = fetchFollowers(communityId!!.toInt())
 				call.respond(followers ?: emptyList())
 			}
+
+			patch ("{id}") {
+				val community = call.receive<Community>()
+				val communityId = call.parameters["id"]!!.toInt()
+				val updatedCommunity =  updateCommunity(communityId, community)
+
+				if (updatedCommunity == null) {
+					call.respond(HttpStatusCode.BadRequest)
+				} else {
+					call.respond(updatedCommunity)
+				} 
+			}
 	}
 }
