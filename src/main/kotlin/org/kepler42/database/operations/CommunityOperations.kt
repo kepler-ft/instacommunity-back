@@ -42,9 +42,9 @@ fun checkAlreadyFollows(userId: Int, communityId: Int) : Boolean {
 }
 
 fun fetchFollowers(id: Int): List<User>? {
-    val community = transaction {
+    val followers = transaction {
         addLogger(StdOutSqlLogger)
         CommunityEntity.findById(id)?.followers?.map { it.toModel() }
     }
-    return community
+    return followers
 }
