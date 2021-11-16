@@ -5,8 +5,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 import io.ktor.application.*
 
-import org.kepler42.database.Greetings
-
 fun Application.configureDatabase() {
     createConnection()
 }

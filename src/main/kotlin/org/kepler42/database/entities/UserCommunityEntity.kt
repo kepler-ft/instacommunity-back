@@ -9,8 +9,8 @@ import org.kepler42.models.*
 
 // object that represents a table from the database
 object UsersCommunities : IntIdTable("users_communities") {
-	val user_id = integer("user_id")
-	val community_id = integer("community_id")
+	val user_id = reference("user_id", Users)
+	val community_id = reference("community_id", Communities)
 }
 
 // object that represents a line(register) from the database
@@ -21,6 +21,10 @@ class UserCommunityEntity(id: EntityID<Int>): Entity<Int>(id) {
     var community_id by UsersCommunities.community_id
 
     fun toModel(): UserCommunity {
-        return UserCommunity(this.id.value, this.user_id, this.community_id)
+        return UserCommunity(
+            this.id.value,
+            this.user_id.value,
+            this.community_id.value
+        )
     }
 }
