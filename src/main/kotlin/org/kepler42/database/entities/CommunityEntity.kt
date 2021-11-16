@@ -11,6 +11,7 @@ import org.kepler42.models.*
 object Communities : IntIdTable("communities") {
 	val name = varchar("name", 200)
 	val description = text("description")
+	val contact = varchar("contact", 200).nullable()
 }
 
 // This class represents a row from the table
@@ -20,8 +21,9 @@ class CommunityEntity(id: EntityID<Int>): Entity<Int>(id) {
 	var name by Communities.name
 	var description by Communities.description
 	var followers by UserEntity via UsersCommunities
+	var contact by Communities.contact
 
 	fun toModel(): Community {
-		return Community(this.id.value, this.name, this.description)
+		return Community(this.id.value, this.name, this.description, this.contact)
 	}
 }
