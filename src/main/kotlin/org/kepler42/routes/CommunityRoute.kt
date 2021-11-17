@@ -10,6 +10,12 @@ import org.kepler42.models.*
 import org.kepler42.database.operations.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 
+private fun invalidName(name: String?) =
+    if (name == null) true
+    else if (name.length < 1) true
+    else if (name.length > 200) true
+    else false
+
 fun Route.communityRoute() {
 	    route("/communities") {
 			get ("{id}") {
@@ -19,7 +25,7 @@ fun Route.communityRoute() {
 					call.respond(HttpStatusCode.NotFound)
 				} else {
 					call.respond(community)
-				} 
+				}
 			}
 
         	post ("{id}/followers") {
@@ -58,6 +64,25 @@ fun Route.communityRoute() {
 				} else {
 					call.respond(updatedCommunity)
 				} 
+			}
+
+			get {
+				val communityNameToFind = call.request.queryParameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+				val communities: List<Community>? = fetchCommunitiesByName(communityNameToFind)
+				call.respond(communities ?: emptyList())
+			}
+
+			post {
+				val community = call.receive<Community>()
+				if (invalidName(community.name))
+        			return@post call.respond(
+                        HttpStatusCode.BadRequest,
+                        mapOf("error" to "Invalid name"))
+				try {
+					call.respond(insertCommunities(community))
+				} catch (e: ExposedSQLException) {
+					call.respond(mapOf("error" to "Something has gone pretty bad"))
+				}
 			}
 	}
 }

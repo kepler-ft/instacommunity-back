@@ -14,6 +14,7 @@ group = "org.kepler42"
 version = "0.0.1"
 application {
     mainClass.set("org.kepler42.ApplicationKt")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=true")
 }
 
 repositories {
