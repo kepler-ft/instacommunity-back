@@ -10,9 +10,9 @@ import org.kepler42.models.*
 import org.kepler42.database.operations.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 
-fun invalidName(name: String?) =
+private fun invalidName(name: String?) =
     if (name == null) true
-    else if (name.length < 6) true
+    else if (name.length < 2) true
     else if (name.length > 200) true
     else false
 
