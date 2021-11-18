@@ -54,6 +54,17 @@ fun checkAlreadyFollows(userId: Int, communityId: Int): Boolean {
     }
 }
 
+fun checkAlreadyExists(communityName: String): Boolean {
+    return transaction {
+        addLogger(StdOutSqlLogger)
+        val communityExists =
+                CommunityEntity.find {
+                    (Communities.name eq communityName)
+                }
+        communityExists.any()
+    }
+}
+
 fun fetchFollowers(id: Int): List<User>? {
     val followers = transaction {
         addLogger(StdOutSqlLogger)
