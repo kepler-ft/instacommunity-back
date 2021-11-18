@@ -80,7 +80,7 @@ fun Route.communityRoute() {
                     mapOf("error" to "Invalid name"))
                 }
                 try {
-                    if (checkAlreadyExists(community.name)) {
+                    if (checkAlreadyExists(community.name!!)) {
                         return@post call.respond(HttpStatusCode.BadRequest,
                         mapOf("error" to "Community already exists"))
                     }
