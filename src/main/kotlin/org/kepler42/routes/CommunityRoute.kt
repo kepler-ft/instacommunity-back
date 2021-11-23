@@ -18,6 +18,12 @@ private fun invalidName(name: String?) =
 
 fun Route.communityRoute() {
         route("/communities") {
+            get {
+                val communityNameToFind = call.request.queryParameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+                val communities: List<Community>? = fetchCommunitiesByName(communityNameToFind)
+                call.respond(communities ?: emptyList())
+            }
+
             get ("{id}") {
                 val communityId = call.parameters["id"]
                 val community: Community? = fetchCommunity(communityId!!.toInt())
@@ -64,12 +70,6 @@ fun Route.communityRoute() {
                 } else {
                     call.respond(updatedCommunity)
                 }
-            }
-
-            get {
-                val communityNameToFind = call.request.queryParameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-                val communities: List<Community>? = fetchCommunitiesByName(communityNameToFind)
-                call.respond(communities ?: emptyList())
             }
 
             post {
