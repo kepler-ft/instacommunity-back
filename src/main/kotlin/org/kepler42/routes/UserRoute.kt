@@ -18,19 +18,20 @@ private fun invalidName(name: String?) =
 
 
 fun Route.userRoute() {
-	    route("/users") {
-			post() {
-				val user = call.receive<User>()
-				if (invalidName(user.name))
-        			return@post call.respond(
-                        HttpStatusCode.BadRequest,
-                        mapOf("error" to "Invalid name"))
+    route("/users") {
+        post() {
+            val user = call.receive<User>()
+            if (invalidName(user.name))
+                    return@post call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Invalid name")
+                    )
 
-				try {
-					call.respond(insertUsers(user))
-				} catch (e: ExposedSQLException) {
-					call.respond(mapOf("error" to "Something has gone pretty bad"))
-				}
-			}
-		}
-	}
+            try {
+                call.respond(insertUsers(user))
+            } catch (e: ExposedSQLException) {
+                call.respond(mapOf("error" to "Something has gone pretty bad"))
+            }
+        }
+    }
+}
