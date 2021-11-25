@@ -59,7 +59,7 @@ fun checkAlreadyExists(communityName: String): Boolean {
         addLogger(StdOutSqlLogger)
         val communityExists =
                 CommunityEntity.find {
-                    (Communities.name eq communityName)
+                    (Communities.name ilike communityName)
                 }
         communityExists.any()
     }

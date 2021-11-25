@@ -17,6 +17,7 @@ class UserEntity(id: EntityID<Int>): Entity<Int>(id) {
 	companion object : EntityClass<Int, UserEntity>(Users)
 
 	var name by Users.name
+    var communities by CommunityEntity via UsersCommunities
 
 	fun toModel(): User {
 		return User(this.id.value, this.name)

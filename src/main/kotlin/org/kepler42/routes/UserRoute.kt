@@ -33,5 +33,11 @@ fun Route.userRoute() {
                 call.respond(mapOf("error" to "Something has gone pretty bad"))
             }
         }
+
+        get("{id}/communities") {
+            val id = call.parameters["id"];
+            val communities = fetchCommunitiesByUserId(id!!.toInt())
+            call.respond(communities ?: emptyList())
+        }
     }
 }

@@ -13,3 +13,11 @@ fun insertUsers(user: User): User {
     }
     return newUser.toModel()
 }
+
+fun fetchCommunitiesByUserId(userId: Int ): List<Community>? {
+    val communities = transaction {
+        addLogger(StdOutSqlLogger)
+        UserEntity.findById(userId)?.communities?.map { it.toModel() }
+    }
+    return communities
+}
