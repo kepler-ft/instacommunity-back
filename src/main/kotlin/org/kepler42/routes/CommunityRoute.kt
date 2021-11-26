@@ -54,6 +54,21 @@ fun Route.communityRoute() {
                 }
             }
 
+            delete ("{id}/followers") {
+                try {
+                    val user = call.receive<User>()
+                    val communityId = call.parameters["id"]
+                    val response: UserCommunity = deleteFollower(UserCommunity(
+                            userId = user.id,
+                            communityId = communityId!!.toInt()))
+                        call.respond(response)
+                        println("$response")
+                } catch (e: ExposedSQLException) {
+                    call.respond(HttpStatusCode.InternalServerError,
+                    mapOf("error" to "Couldn`t delete user from community"))
+                }
+            }
+
             get ("{id}/followers") {
                 val communityId = call.parameters["id"]
                 val followers = fetchFollowers(communityId!!.toInt())

@@ -42,6 +42,18 @@ fun insertFollower(userCommunity: UserCommunity): UserCommunity {
     return newUserCommunity.toModel()
 }
 
+fun deleteFollower(userCommunity: UserCommunity): UserCommunity {
+    transaction {
+        addLogger(StdOutSqlLogger)
+        val relationToDelete = UserCommunityEntity.find {
+            (UsersCommunities.user_id eq userCommunity.userId) and
+                    (UsersCommunities.community_id eq userCommunity.communityId)
+        }.toList().first()
+        relationToDelete.delete()
+    }
+    return userCommunity
+}
+
 fun checkAlreadyFollows(userId: Int, communityId: Int): Boolean {
     return transaction {
         addLogger(StdOutSqlLogger)
