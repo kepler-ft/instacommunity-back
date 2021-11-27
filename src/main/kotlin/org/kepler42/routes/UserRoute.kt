@@ -10,11 +10,12 @@ import org.kepler42.models.*
 import org.kepler42.database.operations.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 
-private fun invalidName(name: String?) =
-    if (name == null) true
-    else if (name.length < 2) true
-    else if (name.length > 200) true
-    else false
+private fun invalidName(name: String?) = when {
+        (name == null) -> true
+        (name.length < 2) -> true
+        (name.length > 200) -> true
+        else false
+    }
 
 
 fun Route.userRoute() {
@@ -22,10 +23,10 @@ fun Route.userRoute() {
         post() {
             val user = call.receive<User>()
             if (invalidName(user.name))
-                    return@post call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Invalid name")
-                    )
+                return@post call.respond(
+                        HttpStatusCode.BadRequest,
+                        mapOf("error" to "Invalid name")
+                )
 
             try {
                 call.respond(insertUsers(user))
