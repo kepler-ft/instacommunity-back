@@ -14,7 +14,7 @@ private fun invalidName(name: String?) = when {
         (name == null) -> true
         (name.length < 2) -> true
         (name.length > 200) -> true
-        else false
+        else -> false
     }
 
 
