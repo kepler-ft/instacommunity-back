@@ -10,7 +10,7 @@ import org.kepler42.models.*
 // object that represents a table from the database
 object UsersCommunities : IntIdTable("users_communities") {
 	val user_id = reference("user_id", Users)
-	val community_id = reference("community_id", Communities)
+	val community_id = reference("community_id", CommunitiesTable)
 }
 
 // object that represents a line(register) from the database

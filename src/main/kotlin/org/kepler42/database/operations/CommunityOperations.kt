@@ -17,7 +17,9 @@ fun insertCommunities(community: Community): Community {
         CommunityEntity.new {
             name = community.name!!
             description = community.description!!
-            contact = community.contact
+            contact = community.contact!!
+            contact2 = community.contact2
+            contact3 = community.contact3
         }
     }
     return newCommunity.toModel()
@@ -36,7 +38,7 @@ fun insertFollower(userCommunity: UserCommunity): UserCommunity {
         addLogger(StdOutSqlLogger)
         UserCommunityEntity.new {
             user_id = EntityID<Int>(userCommunity.userId, Users)
-            community_id = EntityID<Int>(userCommunity.communityId, Communities)
+            community_id = EntityID<Int>(userCommunity.communityId, CommunitiesTable)
         }
     }
     return newUserCommunity.toModel()
@@ -71,7 +73,7 @@ fun checkAlreadyExists(communityName: String): Boolean {
         addLogger(StdOutSqlLogger)
         val communityExists =
                 CommunityEntity.find {
-                    (Communities.name ilike communityName)
+                    (CommunitiesTable.name ilike communityName)
                 }
         communityExists.any()
     }
@@ -92,6 +94,8 @@ fun updateCommunity(id: Int, community: Community): Community? {
         community.name?.let { oldCommunity?.name = community.name }
         community.description?.let { oldCommunity?.description = community.description }
         community.contact?.let { oldCommunity?.contact = community.contact }
+        community.contact2?.let { oldCommunity?.contact2 = community.contact2 }
+        community.contact3?.let { oldCommunity?.contact3 = community.contact3 }
         oldCommunity?.toModel()
     }
 }
@@ -99,7 +103,7 @@ fun updateCommunity(id: Int, community: Community): Community? {
 fun fetchCommunitiesByName(name: String): List<Community>? {
     val communities = transaction {
         addLogger(StdOutSqlLogger)
-        CommunityEntity.find { Communities.name ilike "%$name%" }.map { it.toModel() }
+        CommunityEntity.find { CommunitiesTable.name ilike "%$name%" }.orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC).map { it.toModel() }
     }
     return communities
 }

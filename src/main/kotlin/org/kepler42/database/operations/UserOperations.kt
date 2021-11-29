@@ -17,7 +17,7 @@ fun insertUsers(user: User): User {
 fun fetchCommunitiesByUserId(userId: Int ): List<Community>? {
     val communities = transaction {
         addLogger(StdOutSqlLogger)
-        UserEntity.findById(userId)?.communities?.map { it.toModel() }
+        UserEntity.findById(userId)?.communities?.orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC)?.map { it.toModel() }
     }
     return communities
 }
