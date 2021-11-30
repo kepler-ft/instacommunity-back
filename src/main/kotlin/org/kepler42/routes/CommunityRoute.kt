@@ -5,32 +5,37 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.database.operations.*
 import org.kepler42.models.*
-
-private fun invalidName(name: String?) =
-        if (name == null) true
-        else if (name.length < 1) true else if (name.length > 200) true else false
+import org.kepler42.controllers.*
+import org.koin.ktor.ext.inject
 
 fun Route.communityRoute() {
+    val communityController: CommunityController by inject()
+
     route("/communities") {
-        get {
-            val communityNameToFind =
-                    call.request.queryParameters["name"]
-                            ?: return@get call.respond(HttpStatusCode.BadRequest)
-            val communities: List<Community>? = fetchCommunitiesByName(communityNameToFind)
-            call.respond(communities ?: emptyList())
-        }
 
         get("{id}") {
             val communityId = call.parameters["id"]
-            val community: Community? = fetchCommunity(communityId!!.toInt())
+            val community = communityController.getById(communityId!!.toInt())
             if (community == null) {
                 call.respond(HttpStatusCode.NotFound)
             } else {
                 call.respond(community)
             }
+        }
+
+        get {
+            // val communityNameToFind =
+            //         call.request.queryParameters["name"]
+            //                 ?: return@get call.respond(HttpStatusCode.BadRequest)
+            // val communities: List<Community>? = fetchCommunitiesByName(communityNameToFind)
+            // call.respond(communities ?: emptyList())
+            val communityNameToFind =  call.request.queryParameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val communities: List<Community>? = communityController.getByName(communityNameToFind)
+            call.respond(communities ?: emptyList())
         }
 
         post("{id}/followers") {
@@ -81,15 +86,27 @@ fun Route.communityRoute() {
         }
 
         get("{id}/followers") {
-            val communityId = call.parameters["id"]
+            /*val communityId = call.parameters["id"]
             val followers = fetchFollowers(communityId!!.toInt())
+            call.respond(followers ?: emptyList())*/
+            val communityId = call.parameters["id"]
+            val followers = communityController.getFollowersByCommunityId(communityId!!.toInt())
             call.respond(followers ?: emptyList())
         }
 
         patch("{id}") {
-            val community = call.receive<Community>()
+            /*val community = call.receive<Community>()
             val communityId = call.parameters["id"]!!.toInt()
             val updatedCommunity = updateCommunity(communityId, community)
+
+            if (updatedCommunity == null) {
+                call.respond(HttpStatusCode.BadRequest)
+            } else {
+                call.respond(updatedCommunity)
+            }*/
+            val community = call.receive<Community>()
+            val communityId = call.parameters["id"]!!.toInt()
+            val updatedCommunity = communityController.updateCommunitybyCommunityId(communityId, community)
 
             if (updatedCommunity == null) {
                 call.respond(HttpStatusCode.BadRequest)
@@ -100,21 +117,15 @@ fun Route.communityRoute() {
 
         post {
             val community = call.receive<Community>()
-            if (invalidName(community.name)) {
-                return@post call.respond(
-                        HttpStatusCode.BadRequest,
-                        mapOf("error" to "Invalid name")
+            val dto = communityController.handleCommunityPost(community)
+
+            if (dto.error == null) {
+                call.respond(dto.community!!)
+            } else {
+                call.respond(
+                    HttpStatusCode.fromValue(dto.error.code),
+                    dto.error
                 )
-            }
-            try {
-                if (checkAlreadyExists(community.name!!)) {
-                    return@post call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "Community already exists")
-                    )
-                } else call.respond(insertCommunities(community))
-            } catch (e: ExposedSQLException) {
-                call.respond(mapOf("error" to "Something has gone pretty bad"))
             }
         }
     }

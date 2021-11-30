@@ -21,6 +21,8 @@ repositories {
     mavenCentral()
 }
 
+val spek_version = "2.0.17"
+val koin_version = "3.1.4"
 dependencies {
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-serialization:$ktor_version")
@@ -32,4 +34,29 @@ dependencies {
     implementation("com.impossibl.pgjdbc-ng:pgjdbc-ng:$pgjdbcVersion")
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
+
+    // spek
+    testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spek_version")
+    testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spek_version")
+
+    // spek requires kotlin-reflect, can be omitted if already in the classpath
+    testRuntimeOnly("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
+
+    // Koin Core features
+    implementation("io.insert-koin:koin-core:$koin_version")
+    // Koin Test features
+    testImplementation("io.insert-koin:koin-test:$koin_version")
+    // Koin for Ktor 
+    implementation("io.insert-koin:koin-ktor:$koin_version")
+    // SLF4J Logger
+    implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
+}
+
+// setup the test task
+tasks {
+    withType<Test> {
+        useJUnitPlatform {
+            includeEngines("spek2")
+        }
+    }
 }
