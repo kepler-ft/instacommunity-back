@@ -35,7 +35,7 @@ class CommunityController(private val communityRepository: CommunityRepository) 
             communityRepository.insertFollower(userCommunity)
     fun getFollowersByCommunityId(communityId: Int) =
             communityRepository.fetchFollowers(communityId)
-    fun updateCommunitybyCommunityId(id: Int, community: Community) =
+    fun updateCommunityByCommunityId(id: Int, community: Community) =
             communityRepository.updateCommunity(id, community)
     fun insertCommunityByModel(community: Community) =
             communityRepository.insertCommunity(community)

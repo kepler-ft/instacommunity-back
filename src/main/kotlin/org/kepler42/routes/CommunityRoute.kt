@@ -107,7 +107,7 @@ fun Route.communityRoute() {
             val community = call.receive<Community>()
             val communityId = call.parameters["id"]!!.toInt()
             val updatedCommunity =
-                    communityController.updateCommunitybyCommunityId(communityId, community)
+                    communityController.updateCommunityByCommunityId(communityId, community)
 
             if (updatedCommunity == null) {
                 call.respond(HttpStatusCode.BadRequest)
