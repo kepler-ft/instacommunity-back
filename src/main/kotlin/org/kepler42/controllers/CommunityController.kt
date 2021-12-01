@@ -23,7 +23,7 @@ data class CommunityDTO(
 )
 
 class CommunityController(private val communityRepository: CommunityRepository) {
-    fun nameIsValid(name: String?) =
+    private fun nameIsValid(name: String?) =
             if (name == null) false else if (name.isEmpty()) false else name.length < 200
     fun getById(id: Int) = communityRepository.fetchCommunity(id)
     fun getByName(communityNameToFind: String) =
@@ -41,23 +41,19 @@ class CommunityController(private val communityRepository: CommunityRepository) 
             communityRepository.insertCommunity(community)
 
     fun handleCommunityPost(community: Community): CommunityDTO {
-        var error: Error?
-        var communityRet: Community?
+        var error: Error? = null
+        var communityRet: Community? = null
 
         if (!nameIsValid(community.name)) {
-            communityRet = null
             error = BadRequestError("Name is invalid")
         } else {
             try {
                 if (checkAlreadyExists(community.name!!)) {
-                    communityRet = null
                     error = BadRequestError("A community with this name already exists")
                 } else {
                     communityRet = insertCommunities(community)
-                    error = null
                 }
             } catch (e: ExposedSQLException) {
-                communityRet = null
                 error = InternalServerError()
             }
         }
