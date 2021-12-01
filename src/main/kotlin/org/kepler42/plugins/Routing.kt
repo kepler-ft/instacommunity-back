@@ -11,7 +11,6 @@ import org.kepler42.controllers.*
 
 fun Application.configureRouting() {
     routing {
-        // greetingRoute()
         communityRoute()
         userRoute()
     }

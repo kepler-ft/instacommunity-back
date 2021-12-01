@@ -5,18 +5,16 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-
 import org.jetbrains.exposed.exceptions.ExposedSQLException
+import org.kepler42.controllers.*
 import org.kepler42.database.operations.*
 import org.kepler42.models.*
-import org.kepler42.controllers.*
 import org.koin.ktor.ext.inject
 
 fun Route.communityRoute() {
     val communityController: CommunityController by inject()
 
     route("/communities") {
-
         get("{id}") {
             val communityId = call.parameters["id"]
             val community = communityController.getById(communityId!!.toInt())
@@ -33,7 +31,9 @@ fun Route.communityRoute() {
             //                 ?: return@get call.respond(HttpStatusCode.BadRequest)
             // val communities: List<Community>? = fetchCommunitiesByName(communityNameToFind)
             // call.respond(communities ?: emptyList())
-            val communityNameToFind =  call.request.queryParameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val communityNameToFind =
+                    call.request.queryParameters["name"]
+                            ?: return@get call.respond(HttpStatusCode.BadRequest)
             val communities: List<Community>? = communityController.getByName(communityNameToFind)
             call.respond(communities ?: emptyList())
         }
@@ -106,7 +106,8 @@ fun Route.communityRoute() {
             }*/
             val community = call.receive<Community>()
             val communityId = call.parameters["id"]!!.toInt()
-            val updatedCommunity = communityController.updateCommunitybyCommunityId(communityId, community)
+            val updatedCommunity =
+                    communityController.updateCommunitybyCommunityId(communityId, community)
 
             if (updatedCommunity == null) {
                 call.respond(HttpStatusCode.BadRequest)
@@ -122,10 +123,7 @@ fun Route.communityRoute() {
             if (dto.error == null) {
                 call.respond(dto.community!!)
             } else {
-                call.respond(
-                    HttpStatusCode.fromValue(dto.error.code),
-                    dto.error
-                )
+                call.respond(HttpStatusCode.fromValue(dto.error.code), dto.error)
             }
         }
     }

@@ -1,10 +1,10 @@
 package org.kepler42.plugins
 
-import io.ktor.http.*
-import io.ktor.features.*
 import io.ktor.application.*
-import io.ktor.response.*
+import io.ktor.features.*
+import io.ktor.http.*
 import io.ktor.request.*
+import io.ktor.response.*
 
 fun Application.configureHTTP() {
     install(CORS) {
@@ -17,5 +17,4 @@ fun Application.configureHTTP() {
         allowCredentials = true
         anyHost() // @TODO: Don't do this in production if possible. Try to limit it.
     }
-
 }

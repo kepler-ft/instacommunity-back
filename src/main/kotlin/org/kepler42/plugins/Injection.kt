@@ -18,5 +18,4 @@ fun Application.configureInjection() {
         SLF4JLogger()
         modules(icModule)
     }
-
 }
