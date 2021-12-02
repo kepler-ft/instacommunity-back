@@ -29,7 +29,6 @@ class CommunityController(private val communityRepository: CommunityRepository) 
     fun getByName(communityNameToFind: String) =
             communityRepository.fetchCommunitiesByName(communityNameToFind)
 
-    // precisa fazer as coisas que a rota na rua faz
 
     fun insertFollowerByModel(userCommunity: UserCommunity) =
             communityRepository.insertFollower(userCommunity)

@@ -35,9 +35,9 @@ class UserController {
             throw InvalidNameException()
 
         return try {
-            insertUsers(user)
+            insertUser(user)
         } catch (e: ExposedSQLException) {
-            throw CannotInsertException("olokinho meu")
+            throw CannotInsertException()
         } catch (e: Exception) {
             throw UnknownErrorException()
         }
