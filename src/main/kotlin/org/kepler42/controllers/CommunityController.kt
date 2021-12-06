@@ -4,6 +4,7 @@ import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.database.operations.*
 import org.kepler42.models.*
 import io.ktor.features.BadRequestException
+import org.kepler42.database.entities.CommunityEntity
 import org.kepler42.errors.BadRequestError
 import org.kepler42.errors.Error
 import org.kepler42.errors.InternalServerError
@@ -16,6 +17,7 @@ interface CommunityRepository {
     fun checkAlreadyExists(communityName: String): Boolean
     fun fetchFollowers(id: Int): List<User>?
     fun updateCommunity(id: Int, community: Community): Community?
+    fun fetchAllCommunities(): List<CommunityEntity>?
 }
 
 data class CommunityDTO(
@@ -30,7 +32,7 @@ class CommunityController(private val communityRepository: CommunityRepository) 
         else name.length < 200
     fun getById(id: Int) = communityRepository.fetchCommunity(id)
     fun getByName(communityNameToFind: String) = communityRepository.fetchCommunitiesByName(communityNameToFind)
-
+    fun getAll(): List<Community>? = communityRepository.fetchAllCommunities()?.map{ it.toModel() }
     // precisa fazer as coisas que a rota na rua faz
 
     fun insertFollowerByModel(userCommunity: UserCommunity) = communityRepository.insertFollower(userCommunity)

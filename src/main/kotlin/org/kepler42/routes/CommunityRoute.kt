@@ -33,8 +33,11 @@ fun Route.communityRoute() {
             //                 ?: return@get call.respond(HttpStatusCode.BadRequest)
             // val communities: List<Community>? = fetchCommunitiesByName(communityNameToFind)
             // call.respond(communities ?: emptyList())
-            val communityNameToFind =  call.request.queryParameters["name"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-            val communities: List<Community>? = communityController.getByName(communityNameToFind)
+            val communityNameToFind =  call.request.queryParameters["name"]
+            val communities = if (communityNameToFind != null)
+                communityController.getByName(communityNameToFind)
+            else
+                communityController.getAll()
             call.respond(communities ?: emptyList())
         }
 

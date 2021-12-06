@@ -30,6 +30,14 @@ class CommunityRepositoryImpl: CommunityRepository {
         return communities
     }
 
+    override fun fetchAllCommunities(): List<CommunityEntity>? {
+        val communities = transaction {
+            addLogger(StdOutSqlLogger)
+            CommunityEntity.all().orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC).toList()
+        }
+        return communities
+    }
+
     override fun insertCommunity(community: Community): Community {
         val newCommunity = transaction {
             addLogger(StdOutSqlLogger)
