@@ -7,11 +7,10 @@ import org.kepler42.plugins.*
 
 fun main() {
     embeddedServer(Netty, port = 8080, host = "0.0.0.0") {
-                configureInjection()
-                configureRouting()
-                configureSerialization()
-                configureHTTP()
-                configureDatabase()
-            }
-            .start(wait = true)
+        configureInjection()
+        configureRouting()
+        configureSerialization()
+        configureHTTP()
+        configureDatabase()
+    } .start(wait = true)
 }
