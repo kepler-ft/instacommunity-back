@@ -25,7 +25,10 @@ class CommunityRepositoryImpl: CommunityRepository {
     override fun fetchCommunitiesByName(name: String): List<Community>? {
         val communities = transaction {
             addLogger(StdOutSqlLogger)
-            CommunityEntity.find { CommunitiesTable.name ilike "%$name%" }.orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC).map { it.toModel() }
+            CommunityEntity
+                .find { CommunitiesTable.name ilike "%$name%" }
+                .orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC)
+                .map { it.toModel() }
         }
         return communities
     }
@@ -65,12 +68,12 @@ class CommunityRepositoryImpl: CommunityRepository {
 
     override fun checkAlreadyExists(communityName: String): Boolean {
         return transaction {
-        addLogger(StdOutSqlLogger)
-        val communityExists =
+            addLogger(StdOutSqlLogger)
+            val communityExists =
                 CommunityEntity.find {
                     (CommunitiesTable.name ilike communityName)
                 }
-        communityExists.any()
+            communityExists.any()
         }
     }
 
