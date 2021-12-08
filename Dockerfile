@@ -1,4 +1,4 @@
-FROM openjdk:11-slim-bullseye
+FROM openjdk:11-alpine
 
 WORKDIR /backend
 
