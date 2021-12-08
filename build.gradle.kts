@@ -7,7 +7,8 @@ val pgjdbcVersion : String by project
 plugins {
     application
     kotlin("jvm") version "1.5.31"
-                id("org.jetbrains.kotlin.plugin.serialization") version "1.5.31"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.5.31"
+    id("org.flywaydb.flyway") version "8.2.1"
 }
 
 group = "org.kepler42"
@@ -23,6 +24,7 @@ repositories {
 
 val spek_version = "2.0.17"
 val koin_version = "3.1.4"
+val flywayVersion = "8.2.1"
 dependencies {
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-serialization:$ktor_version")
@@ -50,6 +52,25 @@ dependencies {
     implementation("io.insert-koin:koin-ktor:$koin_version")
     // SLF4J Logger
     implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
+
+    implementation("org.flywaydb:flyway-core:$flywayVersion")
+
+    implementation("org.postgresql:postgresql:42.3.1")
+
+}
+
+configurations {
+    testImplementation.get().exclude("org.jetbrains.kotlin", "kotlin-test-junit")
+}
+
+val dbServer: String = System.getenv("DB_SERVER")
+val dbName: String = System.getenv("DB_NAME")
+val dbUser: String = System.getenv("DB_USER")
+val dbPassword: String = System.getenv("DB_PASSWORD")
+flyway {
+    url = "jdbc:postgresql://$dbServer:5432/$dbName"
+    user = dbUser
+    password = dbPassword
 }
 
 // setup the test task
