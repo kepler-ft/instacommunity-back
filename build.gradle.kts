@@ -63,10 +63,10 @@ configurations {
     testImplementation.get().exclude("org.jetbrains.kotlin", "kotlin-test-junit")
 }
 
-val dbServer: String = System.getenv("DB_SERVER")
-val dbName: String = System.getenv("DB_NAME")
-val dbUser: String = System.getenv("DB_USER")
-val dbPassword: String = System.getenv("DB_PASSWORD")
+val dbServer: String = System.getenv("DB_SERVER") ?: "ic-postgres"
+val dbName: String = System.getenv("DB_NAME") ?: "ic-postgres"
+val dbUser: String = System.getenv("DB_USER") ?: "ic-postgres"
+val dbPassword: String = System.getenv("DB_PASSWORD") ?: "ic-postgres"
 flyway {
     url = "jdbc:postgresql://$dbServer:5432/$dbName"
     user = dbUser
@@ -81,3 +81,4 @@ tasks {
         }
     }
 }
+tasks.named("flywayMigrate") { finalizedBy("run") }
