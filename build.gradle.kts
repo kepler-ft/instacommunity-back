@@ -81,4 +81,3 @@ tasks {
         }
     }
 }
-tasks.named("flywayMigrate") { finalizedBy("run") }
