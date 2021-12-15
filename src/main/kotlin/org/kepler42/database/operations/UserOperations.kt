@@ -6,14 +6,6 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.kepler42.database.entities.*
 import org.kepler42.models.*
 
-fun insertUser(user: User): User {
-    val newUser = transaction {
-        addLogger(StdOutSqlLogger)
-        UserEntity.new { name = user.name!! }
-    }
-    return newUser.toModel()
-}
-
 fun fetchCommunitiesByUserId(userId: Int ): List<Community>? {
     val communities = transaction {
         addLogger(StdOutSqlLogger)

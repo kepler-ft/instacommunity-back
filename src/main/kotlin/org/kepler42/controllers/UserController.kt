@@ -2,6 +2,7 @@ package org.kepler42.controllers
 
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.database.operations.*
+import org.kepler42.database.repositories.UserRepository
 import org.kepler42.errors.InvalidNameException
 import org.kepler42.models.*
 
@@ -21,7 +22,7 @@ data class UnknownErrorException(
     override val message: String = "Unknown internal error"
 ): Exception(message)
 
-class UserController {
+class UserController(private val userRepository: UserRepository) {
     private fun invalidName(name: String?) =
         when {
             (name == null) -> true
@@ -30,12 +31,12 @@ class UserController {
             else -> false
         }
 
-    fun handlePost(user: User): User {
+    fun createUser(user: User): User {
         if (invalidName(user.name))
             throw InvalidNameException()
 
         return try {
-            insertUser(user)
+            userRepository.insertUser(user)
         } catch (e: ExposedSQLException) {
             throw CannotInsertException()
         } catch (e: Exception) {

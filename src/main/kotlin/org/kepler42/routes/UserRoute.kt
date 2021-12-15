@@ -16,7 +16,7 @@ fun Route.userRoute() {
         post {
             val user = call.receive<User>()
             try {
-                call.respond(UserController().handlePost(user))
+                call.respond(userController.createUser(user))
             } catch (e: Exception) {
                 call.respond(HttpStatusCode.InternalServerError, mapOf("error" to e.message))
             }
@@ -25,7 +25,7 @@ fun Route.userRoute() {
         get("{id}/communities") {
             val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid id.")
             try {
-                call.respond(UserController().handleGetIdCommunities(id.toInt()))
+                call.respond(userController.handleGetIdCommunities(id.toInt()))
             } catch (e: NumberFormatException) {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
             } catch (e: Exception) {
