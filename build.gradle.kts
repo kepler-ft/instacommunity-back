@@ -25,6 +25,8 @@ repositories {
 val spek_version = "2.0.17"
 val koin_version = "3.1.4"
 val flywayVersion = "8.2.1"
+val kotest_version = "5.0.1"
+val mockk_version = "1.12.1"
 dependencies {
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-serialization:$ktor_version")
@@ -40,6 +42,8 @@ dependencies {
     // spek
     testImplementation("org.spekframework.spek2:spek-dsl-jvm:$spek_version")
     testRuntimeOnly("org.spekframework.spek2:spek-runner-junit5:$spek_version")
+    testImplementation("io.kotest:kotest-assertions-core:$kotest_version")
+    testImplementation("io.mockk:mockk:$mockk_version")
 
     // spek requires kotlin-reflect, can be omitted if already in the classpath
     testRuntimeOnly("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
