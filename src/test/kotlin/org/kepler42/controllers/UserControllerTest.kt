@@ -1,5 +1,6 @@
 package org.kepler42.controllers
 
+import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
@@ -19,7 +20,7 @@ object UserControllerSpek: Spek({
 
     describe("User controller") {
         it("throws when name is smaller than 2 letters") {
-            assertFailsWith<InvalidNameException> {
+            shouldThrowExactly<InvalidNameException> {
                 controller.createUser(User(name = "a"))
             }
         }

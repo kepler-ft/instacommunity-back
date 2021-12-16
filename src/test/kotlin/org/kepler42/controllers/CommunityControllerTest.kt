@@ -21,7 +21,7 @@ object CommunityControlerSpek: Spek({
     val controller by memoized { CommunityController(fakeCommunityRepository)}
 
     describe("Communities controller") {
-        it("fetches a name by id") {
+        it("fetches a community by id") {
             val community = controller.getById(1)
             community shouldNotBe null
             val communityName = community?.name
