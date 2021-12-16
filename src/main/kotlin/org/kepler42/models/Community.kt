@@ -9,5 +9,6 @@ data class Community(
         val description: String? = null,
         val contact: String? = null,
         val contact2: String? = null,
-        val contact3: String? = null
+        val contact3: String? = null,
+        val creator: Int? = null
 )

@@ -13,6 +13,7 @@ object CommunitiesTable : IntIdTable("communities") {
     val contact = varchar("contact", 200)
     val contact2 = varchar("contact2", 200).nullable()
     val contact3 = varchar("contact3", 200).nullable()
+    val creator = reference("user_id", Users)
 }
 
 // This class represents a row from the table
@@ -25,6 +26,7 @@ class CommunityEntity(id: EntityID<Int>) : Entity<Int>(id) {
     var contact by CommunitiesTable.contact
     var contact2 by CommunitiesTable.contact2
     var contact3 by CommunitiesTable.contact3
+    var creator by CommunitiesTable.creator
 
     fun toModel(): Community {
         return Community(
@@ -33,7 +35,8 @@ class CommunityEntity(id: EntityID<Int>) : Entity<Int>(id) {
                 this.description,
                 this.contact,
                 this.contact2,
-                this.contact3
+                this.contact3,
+                this.creator.value
         )
     }
 }
