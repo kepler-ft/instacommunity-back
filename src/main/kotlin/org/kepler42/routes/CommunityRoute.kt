@@ -8,7 +8,9 @@ import io.ktor.routing.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.controllers.*
 import org.kepler42.database.operations.*
+import org.kepler42.errors.AlreadyRelatedException
 import org.kepler42.models.*
+import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
 
 fun Route.communityRoute() {
@@ -17,11 +19,11 @@ fun Route.communityRoute() {
     route("/communities") {
         get("{id}") {
             val communityId = call.parameters["id"]
-            val community = communityController.getById(communityId!!.toInt())
-            if (community == null) {
-                call.respond(HttpStatusCode.NotFound)
-            } else {
+            try{
+                val community = communityController.getById(communityId!!.toInt())
                 call.respond(community)
+            } catch(e: Exception) {
+                call.respond(getHttpCode(e))
             }
         }
 
@@ -44,27 +46,10 @@ fun Route.communityRoute() {
                 val user = call.receive<User>()
                 val communityId = call.parameters["id"]
 
-                if (!checkAlreadyFollows(user.id, communityId!!.toInt())) {
-                    val response: UserCommunity =
-                            insertFollower(
-                                    UserCommunity(
-                                            userId = user.id,
-                                            communityId = communityId.toInt()
-                                    )
-                            )
-                    call.respond(response)
-                } else {
-                    println("já existe")
-                    call.respond(
-                            HttpStatusCode.BadRequest,
-                            mapOf("error" to "User already follows this community")
-                    )
-                }
-            } catch (e: ExposedSQLException) {
-                call.respond(
-                        HttpStatusCode.InternalServerError,
-                        mapOf("error" to "Something has gone pretty bad")
-                )
+                val response = communityController.addFollower(user.id, communityId!!.toInt())
+                call.respond(response)
+            } catch (e: Exception) {
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
         }
 

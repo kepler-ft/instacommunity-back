@@ -3,12 +3,8 @@ package org.kepler42.controllers
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.database.operations.*
 import org.kepler42.models.*
-import io.ktor.features.BadRequestException
 import org.kepler42.database.entities.CommunityEntity
-import org.kepler42.errors.BadRequestError
-import org.kepler42.errors.Error
-import org.kepler42.errors.InternalServerError
-import org.kepler42.models.*
+import org.kepler42.errors.*
 
 interface CommunityRepository {
     fun fetchCommunity(id: Int): Community?
@@ -29,13 +25,21 @@ data class CommunityDTO(
 class CommunityController(private val communityRepository: CommunityRepository) {
     private fun nameIsValid(name: String?) =
             if (name == null) false else if (name.isEmpty()) false else name.length < 200
-    fun getById(id: Int) = communityRepository.fetchCommunity(id)
+    fun getById(id: Int):Community {
+        return communityRepository.fetchCommunity(id)
+            ?: throw ResourceNotFoundException("Community Not Found")
+    }
     fun getByName(communityNameToFind: String) = communityRepository.fetchCommunitiesByName(communityNameToFind)
     fun getAll(): List<Community>? = communityRepository.fetchAllCommunities()?.map{ it.toModel() }
     // precisa fazer as coisas que a rota na rua faz
 
-    fun insertFollowerByModel(userCommunity: UserCommunity) =
-            communityRepository.insertFollower(userCommunity)
+    fun addFollower(userId: Int, communityId: Int) {
+        val alreadyFollows = checkAlreadyFollows(userId, communityId)
+        if (alreadyFollows) throw AlreadyRelatedException("This user already follows this community")
+
+        val relation = UserCommunity(userId = userId, communityId = communityId)
+        communityRepository.insertFollower(relation)
+    }
     fun getFollowersByCommunityId(communityId: Int) =
             communityRepository.fetchFollowers(communityId)
     fun updateCommunityByCommunityId(id: Int, community: Community) =

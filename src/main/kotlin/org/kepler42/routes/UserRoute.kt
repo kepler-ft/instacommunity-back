@@ -7,7 +7,9 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.kepler42.controllers.UserController
 import org.kepler42.models.User
+import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
+
 
 fun Route.userRoute() {
     val userController: UserController by inject()
@@ -18,7 +20,7 @@ fun Route.userRoute() {
             try {
                 call.respond(userController.createUser(user))
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to e.message))
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
         }
 

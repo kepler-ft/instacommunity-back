@@ -37,8 +37,6 @@ class UserController(private val userRepository: UserRepository) {
 
         return try {
             userRepository.insertUser(user)
-        } catch (e: ExposedSQLException) {
-            throw CannotInsertException()
         } catch (e: Exception) {
             throw UnknownErrorException()
         }
