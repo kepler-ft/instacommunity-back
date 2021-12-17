@@ -107,6 +107,7 @@ fun Route.communityRoute() {
             val dto = communityController.handleCommunityPost(community)
 
             if (dto.error == null) {
+                communityController.addFollower(community.creator!!.toInt(), community.id!!.toInt())
                 call.respond(dto.community!!)
             } else {
                 call.respond(

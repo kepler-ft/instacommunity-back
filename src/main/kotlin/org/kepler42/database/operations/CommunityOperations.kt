@@ -20,6 +20,7 @@ fun insertCommunities(community: Community): Community {
             contact = community.contact!!
             contact2 = community.contact2
             contact3 = community.contact3
+            creator = EntityID(community.creator!!, Users)
         }
     }
     return newCommunity.toModel()
