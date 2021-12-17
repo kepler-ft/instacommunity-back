@@ -19,5 +19,11 @@ object CommunityControllerTest : Spek({
             community shouldNotBe null
             community.name shouldBe "Getting Started"
         }
+
+        it("fetches a community by id") {
+            val community = controller.getById(1)
+            community shouldNotBe null
+            community.name shouldBe "Getting Started"
+        }
     }
 })
