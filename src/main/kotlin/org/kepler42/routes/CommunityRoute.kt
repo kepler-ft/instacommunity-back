@@ -9,9 +9,12 @@ import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.controllers.*
 import org.kepler42.database.operations.*
 import org.kepler42.errors.AlreadyRelatedException
+import org.kepler42.errors.EmptyBodyException
 import org.kepler42.models.*
 import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
+import java.awt.dnd.InvalidDnDOperationException
+import java.util.*
 
 fun Route.communityRoute() {
     val communityController: CommunityController by inject()
@@ -46,7 +49,7 @@ fun Route.communityRoute() {
                 val user = call.receive<User>()
                 val communityId = call.parameters["id"]
 
-                val response = communityController.addFollower(user.id, communityId!!.toInt())
+                val response = communityController.addFollower(user.id!!, communityId!!.toInt())
                 call.respond(response)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
@@ -59,7 +62,7 @@ fun Route.communityRoute() {
                 val communityId = call.parameters["id"]
                 val response: UserCommunity =
                         deleteFollower(
-                                UserCommunity(userId = user.id, communityId = communityId!!.toInt())
+                                UserCommunity(userId = user.id!!, communityId = communityId!!.toInt())
                         )
                 call.respond(response)
                 println("$response")
@@ -106,12 +109,12 @@ fun Route.communityRoute() {
             val community = call.receive<Community>()
             val dto = communityController.handleCommunityPost(community)
 
-            if (dto.error == null) {
-                communityController.addFollower(community.creator!!.toInt(), community.id!!.toInt())
-                call.respond(dto.community!!)
+            if (dto.community != null) {
+                communityController.addFollower(community.creator!!, dto.community.id)
+                call.respond(dto.community)
             } else {
                 call.respond(
-                    HttpStatusCode.fromValue(dto.error.code),
+                    HttpStatusCode.fromValue(dto.error!!.code),
                     dto.error
                 )
             }

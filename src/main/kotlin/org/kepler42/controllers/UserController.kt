@@ -3,11 +3,13 @@ package org.kepler42.controllers
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.database.operations.*
 import org.kepler42.errors.InvalidNameException
+import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.models.*
 
 interface UserRepository {
-    fun getUserById(id: Int): User
+    fun getUserById(id: String): User?
     fun insertUser(user: User): User
+    fun changeUser(user: User): User?
 }
 
 data class CannotInsertException(
@@ -42,7 +44,18 @@ class UserController(private val userRepository: UserRepository) {
         }
     }
 
-    fun handleGetIdCommunities(id: Int): List<Community> {
+    fun getById(googleId: String): User {
+        return userRepository.getUserById(googleId) ?: throw ResourceNotFoundException()
+    }
+
+    fun updateUser(user: User): User {
+        if (invalidName(user.name))
+            throw InvalidNameException()
+
+        return userRepository.changeUser(user) ?: throw ResourceNotFoundException()
+    }
+
+    fun handleGetIdCommunities(id: String): List<Community> {
         return try {
             fetchCommunitiesByUserId(id) ?: emptyList()
         } catch(e: ExposedSQLException) {

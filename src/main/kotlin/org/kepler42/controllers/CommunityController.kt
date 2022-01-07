@@ -25,15 +25,17 @@ data class CommunityDTO(
 class CommunityController(private val communityRepository: CommunityRepository) {
     private fun nameIsValid(name: String?) =
             if (name == null) false else if (name.isEmpty()) false else name.length < 200
+
     fun getById(id: Int):Community {
         return communityRepository.fetchCommunity(id)
             ?: throw ResourceNotFoundException("Community Not Found")
     }
-    fun getByName(communityNameToFind: String) = communityRepository.fetchCommunitiesByName(communityNameToFind)
-    fun getAll(): List<Community>? = communityRepository.fetchAllCommunities()?.map{ it.toModel() }
-    // precisa fazer as coisas que a rota na rua faz
 
-    fun addFollower(userId: Int, communityId: Int) {
+    fun getByName(communityNameToFind: String) = communityRepository.fetchCommunitiesByName(communityNameToFind)
+
+    fun getAll(): List<Community>? = communityRepository.fetchAllCommunities()?.map{ it.toModel() }
+
+    fun addFollower(userId: String, communityId: Int) {
         val alreadyFollows = checkAlreadyFollows(userId, communityId)
         if (alreadyFollows) throw AlreadyRelatedException("This user already follows this community")
 
@@ -42,8 +44,10 @@ class CommunityController(private val communityRepository: CommunityRepository) 
     }
     fun getFollowersByCommunityId(communityId: Int) =
             communityRepository.fetchFollowers(communityId)
+
     fun updateCommunityByCommunityId(id: Int, community: Community) =
             communityRepository.updateCommunity(id, community)
+
     fun insertCommunityByModel(community: Community) =
             communityRepository.insertCommunity(community)
 

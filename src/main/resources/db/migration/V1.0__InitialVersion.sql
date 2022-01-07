@@ -1,11 +1,10 @@
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    firstName VARCHAR NOT NULL,
-    lastName VARCHAR NOT NULL,
-    nickName VARCHAR NOT NULL,
-    jobPost VARCHAR NOT NULL,
+    id varchar PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    username VARCHAR NOT NULL,
+    occupation VARCHAR,
     email VARCHAR NOT NULL,
-    usePhoto BOOLEAN
+    use_photo BOOLEAN
 );
 
 CREATE TABLE communities (
@@ -27,8 +26,8 @@ CREATE TABLE users_communities (
     UNIQUE (user_id, community_id)
 );
 
-INSERT INTO users(googleId, firstName, lastName, nickName, jobPost, email, usePhoto)
-VALUES ('batatinhafrita123', 'Ada', 'Luvlace', 'Ada', 'Programadora', 'ada@example.com', false);
+INSERT INTO users(google_id, name, username, occupation, email, use_photo)
+VALUES ('batatinhafrita123', 'Ada Luvlace', 'ada', 'Programadora', 'ada@example.com', false);
 
 INSERT INTO communities(name, contact, description, creator)
 VALUES ('Getting Started', 'https://github.com/kepler-ft',
