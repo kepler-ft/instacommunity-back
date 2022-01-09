@@ -1,5 +1,5 @@
 CREATE TABLE users (
-    id varchar PRIMARY KEY,
+    id VARCHAR PRIMARY KEY,
     name VARCHAR NOT NULL,
     username VARCHAR NOT NULL,
     occupation VARCHAR,
@@ -14,19 +14,20 @@ CREATE TABLE communities (
      contact VARCHAR(200) NOT NULL,
      contact2 VARCHAR(200) DEFAULT '',
      contact3 VARCHAR(200) DEFAULT '',
-     creator INTEGER
+     creator VARCHAR,
+     FOREIGN KEY (creator) REFERENCES users(id)
 );
 
 CREATE TABLE users_communities (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id VARCHAR NOT NULL,
     community_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (community_id) REFERENCES communities(id),
     UNIQUE (user_id, community_id)
 );
 
-INSERT INTO users(google_id, name, username, occupation, email, use_photo)
+INSERT INTO users(id, name, username, occupation, email, use_photo)
 VALUES ('batatinhafrita123', 'Ada Luvlace', 'ada', 'Programadora', 'ada@example.com', false);
 
 INSERT INTO communities(name, contact, description, creator)
@@ -36,7 +37,7 @@ VALUES ('Getting Started', 'https://github.com/kepler-ft',
         'Cygnus a cerca de 126 anos-luz a partir do Sol. ' ||
         'Ela tem três planetas extrassolares conhecidos, ' ||
         'os quais tem raios menores do que o raio da Terra, e, ' ||
-        'provavelmente, também são menores em massa.', 1);
+        'provavelmente, também são menores em massa.', 'batatinhafrita123');
 
 INSERT INTO users_communities(user_id, community_id)
-VALUES (1, 1);
+VALUES ('batatinhafrita123', 1);

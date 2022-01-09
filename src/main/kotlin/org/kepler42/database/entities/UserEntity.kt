@@ -9,7 +9,8 @@ import org.kepler42.models.*
 
 // object is the representation of the Table users
 object Users : IdTable<String>("users") {
-    override val id = entityId("id", varchar("id", 100))
+    val idColumn = varchar("id", 100)
+    override val id = idColumn.entityId()
     val name = varchar("name", 200)
     val username = varchar("username", 200)
     val occupation = varchar("occupation", 200)
