@@ -46,10 +46,8 @@ fun Route.userRoute() {
             val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid id.")
             try {
                 call.respond(userController.handleGetIdCommunities(id))
-            } catch (e: NumberFormatException) {
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to e.message))
             } catch (e: Exception) {
-                call.respond(HttpStatusCode.InternalServerError, mapOf("error" to e.message))
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
         }
     }
