@@ -18,9 +18,10 @@ fun generateString(length: Int): String {
 
 object UserControllerTest : Spek({
     val fakeUserRepository = mockk<UserRepository>()
+    val fakeCommunityRepository = mockk<CommunityRepository>()
     val userSlot = slot<User>()
     every { fakeUserRepository.insertUser(capture(userSlot)) } answers { userSlot.captured }
-    val controller by memoized { UserController(fakeUserRepository) }
+    val controller by memoized { UserController(fakeUserRepository, fakeCommunityRepository) }
 
     describe("User controller") {
         it("throws when name is smaller than 2 letters") {
