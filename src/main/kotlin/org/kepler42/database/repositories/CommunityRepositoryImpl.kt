@@ -41,6 +41,14 @@ class CommunityRepositoryImpl: CommunityRepository {
         return communities
     }
 
+    override fun fetchCommunitiesFollowedByUser(userId: String): List<Community>? {
+        val communities = transaction {
+            addLogger(StdOutSqlLogger)
+            UserEntity.findById(userId)?.communities?.orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC)?.map { it.toModel() }
+        }
+        return communities
+    }
+
     override fun insertCommunity(community: Community): Community {
         val newCommunity = transaction {
             addLogger(StdOutSqlLogger)

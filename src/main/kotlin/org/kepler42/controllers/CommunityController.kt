@@ -16,6 +16,7 @@ interface CommunityRepository {
     fun fetchFollowers(id: Int): List<User>?
     fun updateCommunity(id: Int, community: Community): Community?
     fun fetchAllCommunities(): List<CommunityEntity>?
+    fun fetchCommunitiesFollowedByUser(userId: String): List<Community>?
 }
 
 data class CommunityDTO(

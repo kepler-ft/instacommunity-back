@@ -24,7 +24,7 @@ data class UnknownErrorException(
     override val message: String = "Unknown internal error"
 ): Exception(message)
 
-class UserController(private val userRepository: UserRepository) {
+class UserController(private val userRepository: UserRepository, private val communityRepository: CommunityRepository) {
     private fun invalidName(name: String?) =
         when {
             (name == null) -> true
@@ -52,6 +52,6 @@ class UserController(private val userRepository: UserRepository) {
     }
 
     fun getFollowedCommunities(id: String): List<Community> {
-        return fetchCommunitiesByUserId(id) ?: emptyList()
+        return communityRepository.fetchCommunitiesFollowedByUser(id) ?: emptyList()
     }
 }
