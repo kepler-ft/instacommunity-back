@@ -1,7 +1,6 @@
 package org.kepler42.controllers
 
 import org.jetbrains.exposed.exceptions.ExposedSQLException
-import org.kepler42.database.operations.*
 import org.kepler42.errors.InvalidNameException
 import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.models.*
