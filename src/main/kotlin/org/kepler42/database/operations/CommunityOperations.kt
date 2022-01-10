@@ -38,26 +38,14 @@ fun insertFollower(userCommunity: UserCommunity): UserCommunity {
     val newUserCommunity = transaction {
         addLogger(StdOutSqlLogger)
         UserCommunityEntity.new {
-            user_id = EntityID<Int>(userCommunity.userId, Users)
-            community_id = EntityID<Int>(userCommunity.communityId, CommunitiesTable)
+            user_id = EntityID(userCommunity.userId, Users)
+            community_id = EntityID(userCommunity.communityId, CommunitiesTable)
         }
     }
     return newUserCommunity.toModel()
 }
 
-fun deleteFollower(userCommunity: UserCommunity): UserCommunity {
-    transaction {
-        addLogger(StdOutSqlLogger)
-        val relationToDelete = UserCommunityEntity.find {
-            (UsersCommunities.user_id eq userCommunity.userId) and
-                    (UsersCommunities.community_id eq userCommunity.communityId)
-        }.toList().first()
-        relationToDelete.delete()
-    }
-    return userCommunity
-}
-
-fun checkAlreadyFollows(userId: Int, communityId: Int): Boolean {
+fun checkAlreadyFollows(userId: String, communityId: Int): Boolean {
     return transaction {
         addLogger(StdOutSqlLogger)
         val follows =

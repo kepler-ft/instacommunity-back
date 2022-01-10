@@ -41,6 +41,14 @@ class CommunityRepositoryImpl: CommunityRepository {
         return communities
     }
 
+    override fun fetchCommunitiesFollowedByUser(userId: String): List<Community>? {
+        val communities = transaction {
+            addLogger(StdOutSqlLogger)
+            UserEntity.findById(userId)?.communities?.orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC)?.map { it.toModel() }
+        }
+        return communities
+    }
+
     override fun insertCommunity(community: Community): Community {
         val newCommunity = transaction {
             addLogger(StdOutSqlLogger)
@@ -84,6 +92,17 @@ class CommunityRepositoryImpl: CommunityRepository {
             CommunityEntity.findById(id)?.followers?.map { it.toModel() }
         }
         return followers
+    }
+
+    override fun deleteFollower(communityId: Int, userId: String) {
+        transaction {
+            addLogger(StdOutSqlLogger)
+            val relationToDelete = UserCommunityEntity.find {
+                (UsersCommunities.user_id eq userId) and
+                    (UsersCommunities.community_id eq communityId)
+            }.toList().first()
+            relationToDelete.delete()
+        }
     }
 
     override fun updateCommunity(id: Int, community: Community): Community? {

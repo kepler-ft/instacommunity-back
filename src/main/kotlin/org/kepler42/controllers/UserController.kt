@@ -3,11 +3,13 @@ package org.kepler42.controllers
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.database.operations.*
 import org.kepler42.errors.InvalidNameException
+import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.models.*
 
 interface UserRepository {
-    fun getUserById(id: Int): User
+    fun getUserById(id: String): User?
     fun insertUser(user: User): User
+    fun changeUser(user: User): User?
 }
 
 data class CannotInsertException(
@@ -22,7 +24,7 @@ data class UnknownErrorException(
     override val message: String = "Unknown internal error"
 ): Exception(message)
 
-class UserController(private val userRepository: UserRepository) {
+class UserController(private val userRepository: UserRepository, private val communityRepository: CommunityRepository) {
     private fun invalidName(name: String?) =
         when {
             (name == null) -> true
@@ -35,20 +37,21 @@ class UserController(private val userRepository: UserRepository) {
         if (invalidName(user.name))
             throw InvalidNameException()
 
-        return try {
-            userRepository.insertUser(user)
-        } catch (e: Exception) {
-            throw UnknownErrorException()
-        }
+        return userRepository.insertUser(user)
     }
 
-    fun handleGetIdCommunities(id: Int): List<Community> {
-        return try {
-            fetchCommunitiesByUserId(id) ?: emptyList()
-        } catch(e: ExposedSQLException) {
-            throw CannotFetchException()
-        } catch (e: Exception) {
-            throw UnknownErrorException()
-        }
+    fun getById(googleId: String): User {
+        return userRepository.getUserById(googleId) ?: throw ResourceNotFoundException()
+    }
+
+    fun updateUser(user: User): User {
+        if (invalidName(user.name))
+            throw InvalidNameException()
+
+        return userRepository.changeUser(user) ?: throw ResourceNotFoundException()
+    }
+
+    fun getFollowedCommunities(id: String): List<Community> {
+        return communityRepository.fetchCommunitiesFollowedByUser(id) ?: emptyList()
     }
 }

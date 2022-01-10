@@ -13,7 +13,7 @@ object CommunitiesTable : IntIdTable("communities") {
     val contact = varchar("contact", 200)
     val contact2 = varchar("contact2", 200).nullable()
     val contact3 = varchar("contact3", 200).nullable()
-    val creator = reference("user_id", Users)
+    val creator = reference("creator", Users)
 }
 
 // This class represents a row from the table

@@ -14,7 +14,7 @@ import org.koin.logger.SLF4JLogger
 fun Application.configureInjection() {
     val icModule = module {
         single { CommunityController(get()) }
-        single { UserController(get()) }
+        single { UserController(get(), get()) }
         single<CommunityRepository> { CommunityRepositoryImpl() }
         single<UserRepository> { UserRepositoryImpl() }
     }

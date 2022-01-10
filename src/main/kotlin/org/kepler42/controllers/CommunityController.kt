@@ -11,10 +11,12 @@ interface CommunityRepository {
     fun fetchCommunitiesByName(name: String): List<Community>?
     fun insertCommunity(community: Community): Community
     fun insertFollower(userCommunity: UserCommunity): UserCommunity
+    fun deleteFollower(communityId: Int, userId: String)
     fun checkAlreadyExists(communityName: String): Boolean
     fun fetchFollowers(id: Int): List<User>?
     fun updateCommunity(id: Int, community: Community): Community?
     fun fetchAllCommunities(): List<CommunityEntity>?
+    fun fetchCommunitiesFollowedByUser(userId: String): List<Community>?
 }
 
 data class CommunityDTO(
@@ -25,45 +27,57 @@ data class CommunityDTO(
 class CommunityController(private val communityRepository: CommunityRepository) {
     private fun nameIsValid(name: String?) =
             if (name == null) false else if (name.isEmpty()) false else name.length < 200
+
     fun getById(id: Int):Community {
         return communityRepository.fetchCommunity(id)
             ?: throw ResourceNotFoundException("Community Not Found")
     }
-    fun getByName(communityNameToFind: String) = communityRepository.fetchCommunitiesByName(communityNameToFind)
-    fun getAll(): List<Community>? = communityRepository.fetchAllCommunities()?.map{ it.toModel() }
-    // precisa fazer as coisas que a rota na rua faz
 
-    fun addFollower(userId: Int, communityId: Int) {
+    fun getByName(communityNameToFind: String): List<Community> {
+        return communityRepository.fetchCommunitiesByName(communityNameToFind) ?: emptyList()
+    }
+
+    fun getAll(): List<Community> {
+        return communityRepository.fetchAllCommunities()?.map{ it.toModel() } ?: emptyList()
+    }
+
+    fun addFollower(userId: String, communityId: Int) {
         val alreadyFollows = checkAlreadyFollows(userId, communityId)
         if (alreadyFollows) throw AlreadyRelatedException("This user already follows this community")
 
         val relation = UserCommunity(userId = userId, communityId = communityId)
         communityRepository.insertFollower(relation)
     }
-    fun getFollowersByCommunityId(communityId: Int) =
+
+    fun removeFollower(communityId: Int, userId: String) {
+        communityRepository.deleteFollower(communityId, userId)
+    }
+
+    fun getCommunityFollowers(communityId: Int) =
             communityRepository.fetchFollowers(communityId)
-    fun updateCommunityByCommunityId(id: Int, community: Community) =
-            communityRepository.updateCommunity(id, community)
+
+    fun updateCommunity(id: Int, community: Community) {
+        communityRepository.updateCommunity(id, community)
+    }
+
     fun insertCommunityByModel(community: Community) =
             communityRepository.insertCommunity(community)
 
-    fun handleCommunityPost(community: Community): CommunityDTO {
-        var error: Error? = null
-        var communityRet: Community? = null
+    fun createCommunity(community: Community): Community {
+        var createdCommunity: Community? = null
 
-        if (!nameIsValid(community.name)) {
-            error = BadRequestError("Name is invalid")
-        } else {
-            try {
-                if (checkAlreadyExists(community.name!!)) {
-                    error = BadRequestError("A community with this name already exists")
-                } else {
-                    communityRet = insertCommunities(community)
-                }
-            } catch (e: ExposedSQLException) {
-                error = InternalServerError()
-            }
+        if (!nameIsValid(community.name))
+            throw InvalidNameException()
+
+        if (checkAlreadyExists(community.name!!))
+            throw AlreadyExistsException("A community with this name already exists")
+
+        createdCommunity = insertCommunities(community)
+        if (community.creator != null) {
+            val relation = UserCommunity(userId = community.creator, communityId = createdCommunity.id)
+            communityRepository.insertFollower(relation)
         }
-        return CommunityDTO(communityRet, error)
+
+        return createdCommunity
     }
 }
