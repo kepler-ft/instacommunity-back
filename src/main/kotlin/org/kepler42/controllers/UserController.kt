@@ -37,11 +37,7 @@ class UserController(private val userRepository: UserRepository) {
         if (invalidName(user.name))
             throw InvalidNameException()
 
-        return try {
-            userRepository.insertUser(user)
-        } catch (e: Exception) {
-            throw UnknownErrorException()
-        }
+        return userRepository.insertUser(user)
     }
 
     fun getById(googleId: String): User {
@@ -55,13 +51,7 @@ class UserController(private val userRepository: UserRepository) {
         return userRepository.changeUser(user) ?: throw ResourceNotFoundException()
     }
 
-    fun handleGetIdCommunities(id: String): List<Community> {
-        return try {
-            fetchCommunitiesByUserId(id) ?: emptyList()
-        } catch(e: ExposedSQLException) {
-            throw CannotFetchException()
-        } catch (e: Exception) {
-            throw UnknownErrorException()
-        }
+    fun getFollowedCommunities(id: String): List<Community> {
+        return fetchCommunitiesByUserId(id) ?: emptyList()
     }
 }

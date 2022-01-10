@@ -45,7 +45,7 @@ fun Route.userRoute() {
         get("{id}/communities") {
             val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid id.")
             try {
-                call.respond(userController.handleGetIdCommunities(id))
+                call.respond(userController.getFollowedCommunities(id))
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
