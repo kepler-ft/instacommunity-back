@@ -1,7 +1,5 @@
 package org.kepler42.controllers
 
-import org.jetbrains.exposed.exceptions.ExposedSQLException
-import org.kepler42.database.operations.*
 import org.kepler42.models.*
 import org.kepler42.database.entities.CommunityEntity
 import org.kepler42.errors.*
@@ -12,21 +10,17 @@ interface CommunityRepository {
     fun insertCommunity(community: Community): Community
     fun insertFollower(userCommunity: UserCommunity): UserCommunity
     fun deleteFollower(communityId: Int, userId: String)
-    fun checkAlreadyExists(communityName: String): Boolean
+    fun alreadyExists(communityName: String): Boolean
     fun fetchFollowers(id: Int): List<User>?
     fun updateCommunity(id: Int, community: Community): Community?
     fun fetchAllCommunities(): List<CommunityEntity>?
     fun fetchCommunitiesFollowedByUser(userId: String): List<Community>?
+    fun checkAlreadyFollows(userId: String, communityId: Int): Boolean
 }
 
-data class CommunityDTO(
-    val community: Community?,
-    val error: Error?,
-)
-
 class CommunityController(private val communityRepository: CommunityRepository) {
-    private fun nameIsValid(name: String?) =
-            if (name == null) false else if (name.isEmpty()) false else name.length < 200
+    private fun nameIsValid(name: String) =
+            if (name.isEmpty()) false else name.length < 200
 
     fun getById(id: Int):Community {
         return communityRepository.fetchCommunity(id)
@@ -42,7 +36,7 @@ class CommunityController(private val communityRepository: CommunityRepository) 
     }
 
     fun addFollower(userId: String, communityId: Int) {
-        val alreadyFollows = checkAlreadyFollows(userId, communityId)
+        val alreadyFollows = communityRepository.checkAlreadyFollows(userId, communityId)
         if (alreadyFollows) throw AlreadyRelatedException("This user already follows this community")
 
         val relation = UserCommunity(userId = userId, communityId = communityId)
@@ -60,19 +54,14 @@ class CommunityController(private val communityRepository: CommunityRepository) 
         communityRepository.updateCommunity(id, community)
     }
 
-    fun insertCommunityByModel(community: Community) =
-            communityRepository.insertCommunity(community)
-
     fun createCommunity(community: Community): Community {
-        var createdCommunity: Community? = null
-
-        if (!nameIsValid(community.name))
+        if (community.name == null || !nameIsValid(community.name))
             throw InvalidNameException()
 
-        if (checkAlreadyExists(community.name!!))
+        if (communityRepository.alreadyExists(community.name))
             throw AlreadyExistsException("A community with this name already exists")
 
-        createdCommunity = insertCommunities(community)
+        val createdCommunity = communityRepository.insertCommunity(community)
         if (community.creator != null) {
             val relation = UserCommunity(userId = community.creator, communityId = createdCommunity.id)
             communityRepository.insertFollower(relation)

@@ -75,7 +75,7 @@ class CommunityRepositoryImpl: CommunityRepository {
         return newUserCommunity.toModel()
     }
 
-    override fun checkAlreadyExists(communityName: String): Boolean {
+    override fun alreadyExists(communityName: String): Boolean {
         return transaction {
             addLogger(StdOutSqlLogger)
             val communityExists =
@@ -83,6 +83,18 @@ class CommunityRepositoryImpl: CommunityRepository {
                     (CommunitiesTable.name ilike communityName)
                 }
             communityExists.any()
+        }
+    }
+
+    override fun checkAlreadyFollows(userId: String, communityId: Int): Boolean {
+        return transaction {
+            addLogger(StdOutSqlLogger)
+            val follows =
+                UserCommunityEntity.find {
+                    (UsersCommunities.user_id eq userId) and
+                        (UsersCommunities.community_id eq communityId)
+                }
+            follows.any()
         }
     }
 
