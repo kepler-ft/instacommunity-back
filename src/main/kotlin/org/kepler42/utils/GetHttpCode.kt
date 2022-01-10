@@ -1,7 +1,6 @@
 package org.kepler42.utils
 
 import io.ktor.http.*
-import org.flywaydb.core.internal.resource.ResourceName
 import org.kepler42.errors.*
 
 private val values = mapOf(
