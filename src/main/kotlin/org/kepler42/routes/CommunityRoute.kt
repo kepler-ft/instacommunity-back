@@ -7,49 +7,47 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.controllers.*
-import org.kepler42.database.operations.*
-import org.kepler42.errors.AlreadyRelatedException
-import org.kepler42.errors.EmptyBodyException
 import org.kepler42.models.*
 import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
-import java.awt.dnd.InvalidDnDOperationException
-import java.util.*
 
 fun Route.communityRoute() {
     val communityController: CommunityController by inject()
 
     route("/communities") {
+        get {
+            val communityNameToFind =  call.request.queryParameters["name"]
+            try {
+                val communities = if (communityNameToFind.isNullOrEmpty())
+                    communityController.getAll()
+                else
+                    communityController.getByName(communityNameToFind)
+                call.respond(communities)
+            } catch (e: Exception) {
+                call.respond(getHttpCode(e))
+            }
+        }
+
         get("{id}") {
             val communityId = call.parameters["id"]
+                ?: return@get call.respond(HttpStatusCode.BadRequest, "missing community id")
             try{
-                val community = communityController.getById(communityId!!.toInt())
+                val community = communityController.getById(communityId.toInt())
                 call.respond(community)
             } catch(e: Exception) {
                 call.respond(getHttpCode(e))
             }
         }
 
-        get {
-            // val communityNameToFind =
-            //         call.request.queryParameters["name"]
-            //                 ?: return@get call.respond(HttpStatusCode.BadRequest)
-            // val communities: List<Community>? = fetchCommunitiesByName(communityNameToFind)
-            // call.respond(communities ?: emptyList())
-            val communityNameToFind =  call.request.queryParameters["name"]
-            val communities = if (communityNameToFind.isNullOrEmpty())
-                communityController.getAll()
-            else
-                communityController.getByName(communityNameToFind)
-            call.respond(communities ?: emptyList())
-        }
-
         post("{id}/followers") {
+            val communityId = call.parameters["id"]
+                ?: return@post call.respond(HttpStatusCode.BadRequest, "missing community id")
             try {
                 val user = call.receive<User>()
-                val communityId = call.parameters["id"]
+                if (user.id == null)
+                    return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing user id"))
 
-                val response = communityController.addFollower(user.id!!, communityId!!.toInt())
+                val response = communityController.addFollower(user.id, communityId.toInt())
                 call.respond(response)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
@@ -57,66 +55,50 @@ fun Route.communityRoute() {
         }
 
         delete("{id}/followers") {
+            val communityId = call.parameters["id"]
+                ?: return@delete call.respond(HttpStatusCode.BadRequest, "missing community id")
             try {
                 val user = call.receive<User>()
-                val communityId = call.parameters["id"]
-                val response: UserCommunity =
-                        deleteFollower(
-                                UserCommunity(userId = user.id!!, communityId = communityId!!.toInt())
-                        )
-                call.respond(response)
-                println("$response")
+                if (user.id == null)
+                    return@delete call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing user id"))
+
+                communityController.removeFollower(communityId.toInt(), user.id)
+                call.respond(HttpStatusCode.OK)
             } catch (e: ExposedSQLException) {
-                call.respond(
-                        HttpStatusCode.InternalServerError,
-                        mapOf("error" to "Couldn`t delete user from community")
-                )
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
         }
 
         get("{id}/followers") {
-            /*val communityId = call.parameters["id"]
-            val followers = fetchFollowers(communityId!!.toInt())
-            call.respond(followers ?: emptyList())*/
             val communityId = call.parameters["id"]
-            val followers = communityController.getFollowersByCommunityId(communityId!!.toInt())
-            call.respond(followers ?: emptyList())
+                ?: return@get call.respond(HttpStatusCode.BadRequest, "missing community id")
+            try {
+                val followers = communityController.getCommunityFollowers(communityId.toInt())
+                call.respond(followers ?: emptyList())
+            } catch (e: Exception) {
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
+            }
         }
 
         patch("{id}") {
-            /*val community = call.receive<Community>()
-            val communityId = call.parameters["id"]!!.toInt()
-            val updatedCommunity = updateCommunity(communityId, community)
-
-            if (updatedCommunity == null) {
-                call.respond(HttpStatusCode.BadRequest)
-            } else {
-                call.respond(updatedCommunity)
-            }*/
             val community = call.receive<Community>()
-            val communityId = call.parameters["id"]!!.toInt()
-            val updatedCommunity =
-                    communityController.updateCommunityByCommunityId(communityId, community)
-
-            if (updatedCommunity == null) {
-                call.respond(HttpStatusCode.BadRequest)
-            } else {
+            val communityId = call.parameters["id"]
+                ?: return@patch call.respond(HttpStatusCode.BadRequest, "missing community id")
+            try {
+                val updatedCommunity = communityController.updateCommunity(communityId.toInt(), community)
                 call.respond(updatedCommunity)
+            } catch (e: Exception) {
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
         }
 
         post {
             val community = call.receive<Community>()
-            val dto = communityController.handleCommunityPost(community)
-
-            if (dto.community != null) {
-                communityController.addFollower(community.creator!!, dto.community.id)
-                call.respond(dto.community)
-            } else {
-                call.respond(
-                    HttpStatusCode.fromValue(dto.error!!.code),
-                    dto.error
-                )
+            try {
+                val createdCommunity = communityController.createCommunity(community)
+                call.respond(createdCommunity)
+            } catch (e: Exception) {
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
         }
     }

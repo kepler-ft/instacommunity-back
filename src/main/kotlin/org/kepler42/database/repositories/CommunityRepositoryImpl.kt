@@ -86,6 +86,17 @@ class CommunityRepositoryImpl: CommunityRepository {
         return followers
     }
 
+    override fun deleteFollower(communityId: Int, userId: String) {
+        transaction {
+            addLogger(StdOutSqlLogger)
+            val relationToDelete = UserCommunityEntity.find {
+                (UsersCommunities.user_id eq userId) and
+                    (UsersCommunities.community_id eq communityId)
+            }.toList().first()
+            relationToDelete.delete()
+        }
+    }
+
     override fun updateCommunity(id: Int, community: Community): Community? {
         return transaction {
             addLogger(StdOutSqlLogger)
