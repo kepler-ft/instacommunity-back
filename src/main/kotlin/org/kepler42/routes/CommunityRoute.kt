@@ -1,5 +1,6 @@
 package org.kepler42.routes
 
+import com.google.firebase.auth.FirebaseAuth
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
@@ -93,7 +94,17 @@ fun Route.communityRoute() {
         }
 
         post {
+            val token = call.request.header("Authorization") ?: return@post call.respond(HttpStatusCode.Unauthorized)
+            val idToken = if (token.startsWith("Bearer "))
+                token.split(" ")[1]
+            else
+                null
+            val decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken)
+            val id = decodedToken.uid
+
             val community = call.receive<Community>()
+            if (id != community.creator)
+                return@post call.respond(HttpStatusCode.Unauthorized, "kk mo zuão vc")
             try {
                 val createdCommunity = communityController.createCommunity(community)
                 call.respond(createdCommunity)

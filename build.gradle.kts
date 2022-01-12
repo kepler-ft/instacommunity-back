@@ -61,6 +61,7 @@ dependencies {
 
     implementation("org.postgresql:postgresql:42.3.1")
 
+    implementation("com.google.firebase:firebase-admin:8.1.0")
 }
 
 configurations {
