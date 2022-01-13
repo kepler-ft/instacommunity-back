@@ -58,7 +58,7 @@ class CommunityRepositoryImpl: CommunityRepository {
                 contact = community.contact!!
                 contact2 = community.contact2
                 contact3 = community.contact3
-                creator = EntityID(community.creator!!, Users)
+                creator = EntityID(community.creator!!, UsersTable)
             }
         }
         return newCommunity.toModel()
@@ -68,7 +68,7 @@ class CommunityRepositoryImpl: CommunityRepository {
         val newUserCommunity = transaction {
             addLogger(StdOutSqlLogger)
             UserCommunityEntity.new {
-                user_id = EntityID(userCommunity.userId, Users)
+                user_id = EntityID(userCommunity.userId, UsersTable)
                 community_id = EntityID(userCommunity.communityId, CommunitiesTable)
             }
         }

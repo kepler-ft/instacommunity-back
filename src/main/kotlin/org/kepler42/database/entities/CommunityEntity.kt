@@ -3,7 +3,6 @@ package org.kepler42.database.entities
 import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.*
 import org.kepler42.models.*
 
 // Object is the representation of communities table
@@ -13,7 +12,7 @@ object CommunitiesTable : IntIdTable("communities") {
     val contact = varchar("contact", 200)
     val contact2 = varchar("contact2", 200).nullable()
     val contact3 = varchar("contact3", 200).nullable()
-    val creator = reference("creator", Users)
+    val creator = reference("creator", UsersTable)
 }
 
 // This class represents a row from the table

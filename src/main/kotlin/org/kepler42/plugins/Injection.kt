@@ -4,7 +4,7 @@ import io.ktor.application.*
 import org.kepler42.controllers.CommunityController
 import org.kepler42.controllers.UserController
 import org.kepler42.controllers.CommunityRepository
-import org.kepler42.controllers.UserRepository
+import org.kepler42.database.repositories.UserRepository
 import org.kepler42.database.repositories.CommunityRepositoryImpl
 import org.kepler42.database.repositories.UserRepositoryImpl
 import org.koin.dsl.module

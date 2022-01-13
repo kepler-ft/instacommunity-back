@@ -8,7 +8,9 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.controllers.*
+import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.*
+import org.kepler42.utils.checkAuth
 import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
 
@@ -41,29 +43,27 @@ fun Route.communityRoute() {
         }
 
         post("{id}/followers") {
-            val communityId = call.parameters["id"]
-                ?: return@post call.respond(HttpStatusCode.BadRequest, "missing community id")
             try {
-                val user = call.receive<User>()
-                if (user.id == null)
-                    return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing user id"))
-
-                val response = communityController.addFollower(user.id, communityId.toInt())
+                val communityId = call.parameters["id"]
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "missing community id")
+                val userId = checkAuth(call)
+                val response = communityController.addFollower(userId, communityId.toInt())
                 call.respond(response)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
         }
 
-        delete("{id}/followers") {
-            val communityId = call.parameters["id"]
-                ?: return@delete call.respond(HttpStatusCode.BadRequest, "missing community id")
+        delete("{communityId}/followers/{followerId}") {
             try {
-                val user = call.receive<User>()
-                if (user.id == null)
-                    return@delete call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing user id"))
-
-                communityController.removeFollower(communityId.toInt(), user.id)
+                val userId = checkAuth(call)
+                val communityId = call.parameters["communityId"]
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, mapOf("error" to "missing community id"))
+                val followerId = call.parameters["followerId"]
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing user id"))
+                if (followerId != userId)
+                    throw UnauthorizedException("You can't make other users do what you want")
+                communityController.removeFollower(communityId.toInt(), followerId)
                 call.respond(HttpStatusCode.OK)
             } catch (e: ExposedSQLException) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
@@ -72,7 +72,7 @@ fun Route.communityRoute() {
 
         get("{id}/followers") {
             val communityId = call.parameters["id"]
-                ?: return@get call.respond(HttpStatusCode.BadRequest, "missing community id")
+                ?: return@get call.respond(HttpStatusCode. BadRequest, "missing community id")
             try {
                 val followers = communityController.getCommunityFollowers(communityId.toInt())
                 call.respond(followers ?: emptyList())
@@ -82,11 +82,12 @@ fun Route.communityRoute() {
         }
 
         patch("{id}") {
-            val community = call.receive<Community>()
-            val communityId = call.parameters["id"]
-                ?: return@patch call.respond(HttpStatusCode.BadRequest, "missing community id")
             try {
-                val updatedCommunity = communityController.updateCommunity(communityId.toInt(), community)
+                val userId = checkAuth(call)
+                val community = call.receive<Community>()
+                val communityId = call.parameters["id"]
+                    ?: return@patch call.respond(HttpStatusCode.BadRequest, "missing community id")
+                val updatedCommunity = communityController.updateCommunity(userId, communityId.toInt(), community)
                 call.respond(updatedCommunity)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
@@ -94,18 +95,12 @@ fun Route.communityRoute() {
         }
 
         post {
-            val token = call.request.header("Authorization") ?: return@post call.respond(HttpStatusCode.Unauthorized)
-            val idToken = if (token.startsWith("Bearer "))
-                token.split(" ")[1]
-            else
-                null
-            val decodedToken = FirebaseAuth.getInstance().verifyIdToken(idToken)
-            val id = decodedToken.uid
-
-            val community = call.receive<Community>()
-            if (id != community.creator)
-                return@post call.respond(HttpStatusCode.Unauthorized, "kk mo zuão vc")
             try {
+                val id = checkAuth(call)
+
+                val community = call.receive<Community>()
+                if (id != community.creator)
+                    throw UnauthorizedException("Can't create community in the name of another user")
                 val createdCommunity = communityController.createCommunity(community)
                 call.respond(createdCommunity)
             } catch (e: Exception) {
