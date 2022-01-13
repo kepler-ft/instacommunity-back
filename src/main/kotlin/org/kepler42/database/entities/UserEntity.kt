@@ -2,13 +2,11 @@ package org.kepler42.database.entities
 
 import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.*
 import org.kepler42.models.*
 
 // object is the representation of the Table users
-object Users : IdTable<String>("users") {
+object UsersTable : IdTable<String>("users") {
     val idColumn = varchar("id", 100)
     override val id = idColumn.entityId()
     val name = varchar("name", 200)
@@ -20,13 +18,13 @@ object Users : IdTable<String>("users") {
 
 // this class represents the row from the table
 class UserEntity(id: EntityID<String>) : Entity<String>(id) {
-    companion object : EntityClass<String, UserEntity>(Users)
+    companion object : EntityClass<String, UserEntity>(UsersTable)
 
-    var name by Users.name
-    var username by Users.username
-    var occupation by Users.occupation
-    var email by Users.email
-    var usePhoto by Users.usePhoto
+    var name by UsersTable.name
+    var username by UsersTable.username
+    var occupation by UsersTable.occupation
+    var email by UsersTable.email
+    var usePhoto by UsersTable.usePhoto
     var communities by CommunityEntity via UsersCommunities
 
     fun toModel(): User {
