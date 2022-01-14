@@ -47,10 +47,11 @@ fun Route.userRoute() {
 
         put("{id}") {
             try {
-                val id = checkAuth(call)
-                val user = call.receive<User>()
-                if (id != user.id)
+                val authId = checkAuth(call)
+                val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing id in URL"))
+                if (authId != id)
                     throw UnauthorizedException("Can't change other users info")
+                val user = call.receive<User>()
                 call.respond(userController.updateUser(user))
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
