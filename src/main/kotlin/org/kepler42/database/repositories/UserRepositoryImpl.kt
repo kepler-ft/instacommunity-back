@@ -33,6 +33,7 @@ class UserRepositoryImpl: UserRepository {
                 it[email] = user.email!!
                 it[occupation] = user.occupation!!
                 it[usePhoto] = user.usePhoto!!
+                it[photoURL] = user.photoURL!!
             }
         }
         return user
@@ -45,6 +46,7 @@ class UserRepositoryImpl: UserRepository {
             user.name?.let { oldUser?.name = user.name }
             user.occupation?.let { oldUser?.occupation = user.occupation }
             user.usePhoto?.let { oldUser?.usePhoto = user.usePhoto}
+            user.photoURL?.let { oldUser?.photoURL = user.photoURL}
             oldUser?.toModel()
         }
     }

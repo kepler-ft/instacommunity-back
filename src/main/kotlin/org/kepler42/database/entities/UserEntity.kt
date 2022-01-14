@@ -14,6 +14,7 @@ object UsersTable : IdTable<String>("users") {
     val occupation = varchar("occupation", 200)
     val email = varchar("email", 200)
     val usePhoto = bool("use_photo")
+    val photoURL = varchar("photo_url",200)
 }
 
 // this class represents the row from the table
@@ -25,6 +26,7 @@ class UserEntity(id: EntityID<String>) : Entity<String>(id) {
     var occupation by UsersTable.occupation
     var email by UsersTable.email
     var usePhoto by UsersTable.usePhoto
+    var photoURL by UsersTable.photoURL
     var communities by CommunityEntity via UsersCommunities
 
     fun toModel(): User {
@@ -34,6 +36,7 @@ class UserEntity(id: EntityID<String>) : Entity<String>(id) {
             this.username,
             this.occupation,
             this.usePhoto,
+            this.photoURL,
             this.email)
     }
 }

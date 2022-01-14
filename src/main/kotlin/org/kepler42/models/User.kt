@@ -8,5 +8,6 @@ import kotlinx.serialization.Serializable
     val username: String? = null,
     val occupation: String? = null,
     val usePhoto: Boolean? = null,
+    val photoURL: String? = null,
     val email: String? = null,
 )
