@@ -12,5 +12,6 @@ fun main() {
         configureSerialization()
         configureHTTP()
         configureDatabase()
+        configureFirebase()
     } .start(wait = true)
 }

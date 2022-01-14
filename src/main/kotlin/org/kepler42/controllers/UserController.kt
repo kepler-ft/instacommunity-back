@@ -1,15 +1,10 @@
 package org.kepler42.controllers
 
 import org.jetbrains.exposed.exceptions.ExposedSQLException
+import org.kepler42.database.repositories.UserRepository
 import org.kepler42.errors.InvalidNameException
 import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.models.*
-
-interface UserRepository {
-    fun getUserById(id: String): User?
-    fun insertUser(user: User): User
-    fun changeUser(user: User): User?
-}
 
 data class CannotInsertException(
     override val message: String = "Failed to insert"
@@ -53,4 +48,9 @@ class UserController(private val userRepository: UserRepository, private val com
     fun getFollowedCommunities(id: String): List<Community> {
         return communityRepository.fetchCommunitiesFollowedByUser(id) ?: emptyList()
     }
+
+    fun getByUsername(username: String): User {
+        return userRepository.getByUsername(username) ?: throw ResourceNotFoundException()
+    }
+
 }

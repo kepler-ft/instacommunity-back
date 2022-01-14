@@ -3,12 +3,11 @@ package org.kepler42.database.entities
 import org.jetbrains.exposed.dao.*
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.*
 import org.kepler42.models.*
 
 // object that represents a table from the database
 object UsersCommunities : IntIdTable("users_communities") {
-    val user_id = reference("user_id", Users)
+    val user_id = reference("user_id", UsersTable)
     val community_id = reference("community_id", CommunitiesTable)
 }
 

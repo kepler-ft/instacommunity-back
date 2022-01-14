@@ -4,7 +4,8 @@ CREATE TABLE users (
     username VARCHAR NOT NULL,
     occupation VARCHAR,
     email VARCHAR NOT NULL,
-    use_photo BOOLEAN
+    use_photo BOOLEAN,
+    photo_url VARCHAR
 );
 
 CREATE TABLE communities (
@@ -27,8 +28,8 @@ CREATE TABLE users_communities (
     UNIQUE (user_id, community_id)
 );
 
-INSERT INTO users(id, name, username, occupation, email, use_photo)
-VALUES ('batatinhafrita123', 'Ada Luvlace', 'ada', 'Programadora', 'ada@example.com', false);
+INSERT INTO users(id, name, username, occupation, email, use_photo, photo_url)
+VALUES ('batatinhafrita123', 'Ada Luvlace', 'ada', 'Programadora', 'ada@example.com', false, '');
 
 INSERT INTO communities(name, contact, description, creator)
 VALUES ('Getting Started', 'https://github.com/kepler-ft',

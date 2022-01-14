@@ -5,6 +5,7 @@ import io.kotest.assertions.throwables.shouldThrowExactly
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import org.kepler42.database.repositories.UserRepository
 import org.kepler42.errors.InvalidNameException
 import org.kepler42.models.User
 import org.spekframework.spek2.Spek
