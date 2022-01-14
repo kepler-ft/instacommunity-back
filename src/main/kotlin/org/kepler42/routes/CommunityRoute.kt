@@ -65,7 +65,7 @@ fun Route.communityRoute() {
                     throw UnauthorizedException("You can't make other users do what you want")
                 communityController.removeFollower(communityId.toInt(), followerId)
                 call.respond(HttpStatusCode.OK)
-            } catch (e: ExposedSQLException) {
+            } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
         }
