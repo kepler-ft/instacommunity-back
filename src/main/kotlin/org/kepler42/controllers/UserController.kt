@@ -2,9 +2,11 @@ package org.kepler42.controllers
 
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.database.repositories.UserRepository
+import org.kepler42.errors.AlreadyExistsException
 import org.kepler42.errors.InvalidNameException
 import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.models.*
+import java.lang.IllegalArgumentException
 
 data class CannotInsertException(
     override val message: String = "Failed to insert"
@@ -30,6 +32,11 @@ class UserController(private val userRepository: UserRepository, private val com
     fun createUser(user: User): User {
         if (invalidName(user.name))
             throw InvalidNameException()
+        if (user.username == null)
+            throw IllegalArgumentException("username cannot be null")
+        val existingUser = userRepository.getByUsername(user.username)
+        if (existingUser != null)
+            throw AlreadyExistsException("this username was already taken")
 
         return userRepository.insertUser(user)
     }

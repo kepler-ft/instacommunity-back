@@ -22,6 +22,7 @@ object UserControllerTest : Spek({
     val fakeCommunityRepository = mockk<CommunityRepository>()
     val userSlot = slot<User>()
     every { fakeUserRepository.insertUser(capture(userSlot)) } answers { userSlot.captured }
+    every { fakeUserRepository.getByUsername("ada") } answers { null }
     val controller by memoized { UserController(fakeUserRepository, fakeCommunityRepository) }
 
     describe("User controller") {
@@ -33,7 +34,7 @@ object UserControllerTest : Spek({
 
         it("doesn't throw when name have 2 or more letters") {
             shouldNotThrow<InvalidNameException> {
-                controller.createUser(User(name = "Ada"))
+                controller.createUser(User(name = "Ada", username = "ada"))
             }
         }
 
