@@ -16,15 +16,15 @@ CREATE TABLE communities (
      contact2 VARCHAR(200) DEFAULT '',
      contact3 VARCHAR(200) DEFAULT '',
      creator VARCHAR,
-     FOREIGN KEY (creator) REFERENCES users(id)
+     FOREIGN KEY (creator) REFERENCES users(id) ON DELETE NO ACTION
 );
 
 CREATE TABLE users_communities (
     id SERIAL PRIMARY KEY,
     user_id VARCHAR NOT NULL,
     community_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (community_id) REFERENCES communities(id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (community_id) REFERENCES communities(id) ON DELETE CASCADE,
     UNIQUE (user_id, community_id)
 );
 
