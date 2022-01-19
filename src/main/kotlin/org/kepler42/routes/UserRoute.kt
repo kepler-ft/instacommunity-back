@@ -39,9 +39,12 @@ fun Route.userRoute() {
 
         post {
             try {
-                validator.checkAuth(call)
+                val id = validator.checkAuth(call)
                 val user = call.receive<User>()
-                call.respond(userController.createUser(user))
+                if (id == user.id)
+                    call.respond(userController.createUser(user))
+                else
+                    throw UnauthorizedException()
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
