@@ -10,7 +10,10 @@ import org.spekframework.spek2.style.specification.describe
 
 object CommunityControllerTest : Spek({
     val fakeCommunityRepository = mockk<CommunityRepository>()
-    every { fakeCommunityRepository.fetchCommunity(1) } returns Community(1, "Getting Started")
+    every { fakeCommunityRepository.fetchCommunity(1) } returns Community(
+        1,
+        "Getting Started",
+        contacts = emptyList())
     val controller by memoized { CommunityController(fakeCommunityRepository) }
 
     describe("Communities controller") {
