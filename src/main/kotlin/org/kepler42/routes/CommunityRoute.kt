@@ -10,12 +10,13 @@ import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.controllers.*
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.*
-import org.kepler42.utils.checkAuth
+import org.kepler42.utils.TokenValidator
 import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
 
 fun Route.communityRoute() {
-    val communityController: CommunityController by inject()
+    val communityController: CommunityController by inject<CommunityController>()
+    val validator: TokenValidator by inject<TokenValidator>()
 
     route("/communities") {
         get {
@@ -46,7 +47,7 @@ fun Route.communityRoute() {
             try {
                 val communityId = call.parameters["id"]
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "missing community id")
-                val userId = checkAuth(call)
+                val userId = validator.checkAuth(call)
                 val response = communityController.addFollower(userId, communityId.toInt())
                 call.respond(response)
             } catch (e: Exception) {
@@ -56,7 +57,7 @@ fun Route.communityRoute() {
 
         delete("{communityId}/followers/{followerId}") {
             try {
-                val userId = checkAuth(call)
+                val userId = validator.checkAuth(call)
                 val communityId = call.parameters["communityId"]
                     ?: return@delete call.respond(HttpStatusCode.BadRequest, mapOf("error" to "missing community id"))
                 val followerId = call.parameters["followerId"]
@@ -83,7 +84,7 @@ fun Route.communityRoute() {
 
         patch("{id}") {
             try {
-                val userId = checkAuth(call)
+                val userId = validator.checkAuth(call)
                 val community = call.receive<Community>()
                 val communityId = call.parameters["id"]
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, "missing community id")
@@ -96,10 +97,10 @@ fun Route.communityRoute() {
 
         post {
             try {
-                val id = checkAuth(call)
+                val id = validator.checkAuth(call)
 
                 val community = call.receive<Community>()
-                if (id != community.creator)
+                if (id != community.admin)
                     throw UnauthorizedException("Can't create community in the name of another user")
                 val createdCommunity = communityController.createCommunity(community)
                 call.respond(createdCommunity)

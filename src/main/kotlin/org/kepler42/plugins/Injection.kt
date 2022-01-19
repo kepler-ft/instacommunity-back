@@ -7,6 +7,7 @@ import org.kepler42.controllers.CommunityRepository
 import org.kepler42.database.repositories.UserRepository
 import org.kepler42.database.repositories.CommunityRepositoryImpl
 import org.kepler42.database.repositories.UserRepositoryImpl
+import org.kepler42.utils.TokenValidator
 import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.koin.logger.SLF4JLogger
@@ -15,6 +16,7 @@ fun Application.configureInjection() {
     val icModule = module {
         single { CommunityController(get()) }
         single { UserController(get(), get()) }
+        single { TokenValidator() }
         single<CommunityRepository> { CommunityRepositoryImpl() }
         single<UserRepository> { UserRepositoryImpl() }
     }

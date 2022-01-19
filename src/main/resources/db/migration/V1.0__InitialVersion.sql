@@ -5,7 +5,8 @@ CREATE TABLE users (
     occupation VARCHAR,
     about VARCHAR,
     email VARCHAR NOT NULL,
-    contact VARCHAR,
+    contact_title VARCHAR,
+    contact_link VARCHAR,
     photo_url VARCHAR
 );
 
@@ -15,9 +16,6 @@ CREATE TABLE communities (
      id SERIAL PRIMARY KEY,
      name VARCHAR(200) NOT NULL,
      description TEXT NOT NULL,
-     contact VARCHAR(200) NOT NULL,
-     contact2 VARCHAR(200) DEFAULT '',
-     contact3 VARCHAR(200) DEFAULT '',
      admin VARCHAR,
      slug VARCHAR NOT NULL,
      photo_url VARCHAR,
@@ -44,6 +42,14 @@ CREATE TABLE communities_moderators (
     UNIQUE (user_id, community_id)
 );
 
+CREATE TABLE community_contacts (
+    id SERIAL PRIMARY KEY,
+    community_id INT NOT NULL,
+    title VARCHAR NOT NULL,
+    link VARCHAR,
+    FOREIGN KEY (community_id) REFERENCES communities (id) ON DELETE CASCADE
+);
+
 CREATE TABLE tags (
     id SERIAL PRIMARY KEY ,
     name VARCHAR UNIQUE NOT NULL
@@ -58,13 +64,13 @@ CREATE TABLE communities_tags (
     UNIQUE (tag_id, community_id)
 );
 
-INSERT INTO users(id, name, username, occupation, about, email, contact, photo_url)
+INSERT INTO users(id, name, username, occupation, about, email, contact_title, contact_link, photo_url)
 VALUES ('batatinhafrita123', 'Ada Lovelace', 'LoveAda', 'Programadora', 'matemática e escritora inglesa',
-    'ada@example.com', 'https://github.com/kepler-ft', 'https://i.imgur.com/5suSRAj.png');
+    'ada@example.com', 'github','https://github.com/kepler-ft', 'https://i.imgur.com/5suSRAj.png');
 
 -- /communities/getting%20started
-INSERT INTO communities(name, contact, description, admin, slug, photo_url, type)
-VALUES ('Getting Started', 'https://github.com/kepler-ft',
+INSERT INTO communities(name, description, admin, slug, photo_url, type)
+VALUES ('Getting Started',
         'Kepler-42, anteriormente conhecido como KOI-961, ' ||
         'é uma estrela anã vermelha localizada na constelação de ' ||
         'Cygnus a cerca de 126 anos-luz a partir do Sol. ' ||
@@ -82,3 +88,6 @@ VALUES ('Boas-vindas');
 
 INSERT INTO communities_tags (tag_id, community_id)
 VALUES (1, 1);
+
+INSERT INTO community_contacts (title, link, community_id)
+VALUES ('github', 'https://github.com/kepler-ft', 1);

@@ -58,7 +58,7 @@ class CommunityRepositoryImpl: CommunityRepository {
                 contact = community.contact!!
                 contact2 = community.contact2
                 contact3 = community.contact3
-                creator = EntityID(community.creator!!, UsersTable)
+                creator = EntityID(community.admin!!, UsersTable)
             }
         }
         return newCommunity.toModel()

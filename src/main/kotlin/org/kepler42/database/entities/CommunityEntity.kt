@@ -29,13 +29,14 @@ class CommunityEntity(id: EntityID<Int>) : Entity<Int>(id) {
 
     fun toModel(): Community {
         return Community(
-                this.id.value,
-                this.name,
-                this.description,
-                this.contact,
-                this.contact2,
-                this.contact3,
-                this.creator.value
+            this.id.value,
+            this.name,
+            this.description,
+            this.contact,
+            this.contact2,
+            this.contact3,
+            this.creator.value,
+            contacts = emptyList()
         )
     }
 }

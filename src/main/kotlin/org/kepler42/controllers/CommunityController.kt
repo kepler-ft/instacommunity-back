@@ -52,7 +52,7 @@ class CommunityController(private val communityRepository: CommunityRepository) 
 
     fun updateCommunity(userId: String, id: Int, community: Community) {
         val comm = communityRepository.fetchCommunity(id) ?: throw ResourceNotFoundException()
-        if (comm.creator != userId)
+        if (comm.admin != userId)
             throw UnauthorizedException()
         communityRepository.updateCommunity(id, community)
     }
@@ -65,8 +65,8 @@ class CommunityController(private val communityRepository: CommunityRepository) 
             throw AlreadyExistsException("A community with this name already exists")
 
         val createdCommunity = communityRepository.insertCommunity(community)
-        if (community.creator != null) {
-            val relation = UserCommunity(userId = community.creator, communityId = createdCommunity.id)
+        if (community.admin != null) {
+            val relation = UserCommunity(userId = community.admin, communityId = createdCommunity.id)
             communityRepository.insertFollower(relation)
         }
 
