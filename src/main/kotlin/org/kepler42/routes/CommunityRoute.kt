@@ -1,12 +1,10 @@
 package org.kepler42.routes
 
-import com.google.firebase.auth.FirebaseAuth
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.jetbrains.exposed.exceptions.ExposedSQLException
 import org.kepler42.controllers.*
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.*
@@ -25,7 +23,7 @@ fun Route.communityRoute() {
                 val communities = if (communityNameToFind.isNullOrEmpty())
                     communityController.getAll()
                 else
-                    communityController.getByName(communityNameToFind)
+                    communityController.searchByName(communityNameToFind)
                 call.respond(communities)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e))

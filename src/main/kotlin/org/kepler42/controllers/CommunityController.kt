@@ -27,7 +27,7 @@ class CommunityController(private val communityRepository: CommunityRepository) 
             ?: throw ResourceNotFoundException("Community Not Found")
     }
 
-    fun getByName(communityNameToFind: String): List<Community> {
+    fun searchByName(communityNameToFind: String): List<Community> {
         return communityRepository.fetchCommunitiesByName(communityNameToFind) ?: emptyList()
     }
 
