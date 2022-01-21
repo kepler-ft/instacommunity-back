@@ -8,12 +8,12 @@ interface CommunityRepository {
     fun fetchCommunity(id: Int): Community?
     fun fetchCommunitiesByName(name: String): List<Community>?
     fun insertCommunity(community: Community): Community
-    fun insertFollower(userCommunity: UserCommunity): UserCommunity
+    fun insertFollower(userId: String, communityId: Int)
     fun deleteFollower(communityId: Int, userId: String)
     fun alreadyExists(communityName: String): Boolean
     fun fetchFollowers(id: Int): List<User>?
     fun updateCommunity(id: Int, community: Community): Community?
-    fun fetchAllCommunities(): List<CommunityEntity>?
+    fun fetchAllCommunities(): List<Community>
     fun fetchCommunitiesFollowedByUser(userId: String): List<Community>?
     fun checkAlreadyFollows(userId: String, communityId: Int): Boolean
 }
@@ -32,15 +32,14 @@ class CommunityController(private val communityRepository: CommunityRepository) 
     }
 
     fun getAll(): List<Community> {
-        return communityRepository.fetchAllCommunities()?.map{ it.toModel() } ?: emptyList()
+        return communityRepository.fetchAllCommunities()
     }
 
     fun addFollower(userId: String, communityId: Int) {
         val alreadyFollows = communityRepository.checkAlreadyFollows(userId, communityId)
         if (alreadyFollows) throw AlreadyRelatedException("This user already follows this community")
 
-        val relation = UserCommunity(userId = userId, communityId = communityId)
-        communityRepository.insertFollower(relation)
+        communityRepository.insertFollower(userId, communityId)
     }
 
     fun removeFollower(communityId: Int, userId: String) {
@@ -66,8 +65,7 @@ class CommunityController(private val communityRepository: CommunityRepository) 
 
         val createdCommunity = communityRepository.insertCommunity(community)
         if (community.admin != null) {
-            val relation = UserCommunity(userId = community.admin, communityId = createdCommunity.id)
-            communityRepository.insertFollower(relation)
+            communityRepository.insertFollower(community.admin, createdCommunity.id)
         }
 
         return createdCommunity

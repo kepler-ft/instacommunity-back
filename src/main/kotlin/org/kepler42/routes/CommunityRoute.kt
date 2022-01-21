@@ -13,8 +13,8 @@ import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
 
 fun Route.communityRoute() {
-    val communityController: CommunityController by inject<CommunityController>()
-    val validator: TokenValidator by inject<TokenValidator>()
+    val communityController: CommunityController by inject()
+    val validator: TokenValidator by inject()
 
     route("/communities") {
         get {

@@ -33,10 +33,10 @@ class CommunityRepositoryImpl: CommunityRepository {
         return communities
     }
 
-    override fun fetchAllCommunities(): List<CommunityEntity>? {
+    override fun fetchAllCommunities(): List<Community> {
         val communities = transaction {
             addLogger(StdOutSqlLogger)
-            CommunityEntity.all().orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC).toList()
+            CommunityEntity.all().orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC).toList().map { it.toModel() }
         }
         return communities
     }
@@ -64,15 +64,14 @@ class CommunityRepositoryImpl: CommunityRepository {
         return newCommunity.toModel()
     }
 
-    override fun insertFollower(userCommunity: UserCommunity): UserCommunity {
-        val newUserCommunity = transaction {
+    override fun insertFollower(userId: String, communityId: Int) {
+        transaction {
             addLogger(StdOutSqlLogger)
             UserCommunityEntity.new {
-                user_id = EntityID(userCommunity.userId, UsersTable)
-                community_id = EntityID(userCommunity.communityId, CommunitiesTable)
+                user_id = EntityID(userId, UsersTable)
+                community_id = EntityID(communityId, CommunitiesTable)
             }
         }
-        return newUserCommunity.toModel()
     }
 
     override fun alreadyExists(communityName: String): Boolean {
