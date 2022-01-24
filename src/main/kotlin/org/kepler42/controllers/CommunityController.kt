@@ -49,11 +49,12 @@ class CommunityController(private val communityRepository: CommunityRepository) 
     fun getCommunityFollowers(communityId: Int) =
             communityRepository.fetchFollowers(communityId)
 
-    fun updateCommunity(userId: String, id: Int, community: Community) {
+    fun updateCommunity(userId: String, id: Int, community: Community): Community {
         val comm = communityRepository.fetchCommunity(id) ?: throw ResourceNotFoundException()
         if (comm.admin != userId)
             throw UnauthorizedException()
-        communityRepository.updateCommunity(id, community)
+        val updatedCommunity = communityRepository.updateCommunity(id, community)
+        return updatedCommunity ?: throw ResourceNotFoundException()
     }
 
     fun createCommunity(community: Community): Community {
