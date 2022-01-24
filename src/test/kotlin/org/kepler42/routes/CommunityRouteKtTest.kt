@@ -295,12 +295,21 @@ object CommunityRouteTest: Spek({
             }
         }
 
-        xit("should return 401 if user tries to update a community if not authenticated") {
+        it("should not create a community if a community with the same name already exists") {
+            withTestApplication({ setup(this)}) {
+                val ada = generateUser("Ada")
+                val community = generateCommunity("Kotlin", admin = ada.id!!)
+                every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                every { fakeCommunityRepository.alreadyExists(community.name!!) } answers { true }
 
-        }
-
-        xit("should not create a community if a community with the same name already exists") {
-
+                handleRequest(HttpMethod.Post, "/communities") {
+                    addHeader("Content-Type", "application/json")
+                    setBody(Json.encodeToString(community))
+                }.apply {
+                    response.status() shouldBe HttpStatusCode.Conflict
+                    verify(inverse = true) { fakeCommunityRepository.insertCommunity(community) }
+                }
+            }
         }
 
         xit("should not create a community if it lacks a contact") {
