@@ -14,6 +14,7 @@ import kotlinx.serialization.encodeToString
 import org.kepler42.controllers.CommunityRepository
 import org.kepler42.models.Community
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonDecoder
 import org.kepler42.controllers.CommunityController
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.Contact
@@ -275,8 +276,23 @@ object CommunityRouteTest: Spek({
 
         }
 
-        xit("should return 401 if user tries to update a community if not authenticated") {
+        it("should return 401 if user tries to update a community if not authenticated") {
+            withTestApplication({ setup(this) }) {
+                val ada = generateUser("Ada")
+                val community = generateCommunity("kotlin", ada.id!!, "closed")
+                val updatedCommunity = generateCommunity("kotlin", ada.id!!, "moderated")
+                every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
+                every { fakeCommunityRepository.fetchCommunity(community.id) } answers { community }
+                every { fakeCommunityRepository.updateCommunity(community.id, community) } answers { updatedCommunity }
 
+                handleRequest(HttpMethod.Patch, "/communities/${updatedCommunity.id}") {
+                    addHeader("Content-Type", "application/json")
+                    setBody(Json.encodeToString(community))
+                }.apply {
+                    response.status() shouldBe HttpStatusCode.Unauthorized
+                    verify { fakeCommunityRepository wasNot Called }
+                }
+            }
         }
 
         xit("should return 401 if user tries to update a community if not authenticated") {
