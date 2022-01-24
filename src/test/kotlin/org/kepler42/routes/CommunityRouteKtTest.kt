@@ -8,12 +8,14 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.kepler42.controllers.CommunityRepository
 import org.kepler42.models.Community
 import kotlinx.serialization.json.Json
 import org.kepler42.controllers.CommunityController
+import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.Contact
 import org.kepler42.models.User
 import org.kepler42.plugins.configureRouting
@@ -23,6 +25,21 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+
+fun generateCommunity(name: String, admin: String = "user-id", type: String = "open"): Community {
+    return Community(
+        id = name.hashCode(),
+        name = name,
+        slug = name.lowercase(),
+        admin = admin,
+        type = type,
+        contacts = listOf(
+            Contact(0, "Ada#7777", "ada@lovelace.com"),
+            Contact(1, "Ada#7777", "ada@lovelace.com"),
+            Contact(1, "Ada#7777", "ada@lovelace.com"),
+        )
+    )
+}
 
 fun generateCommunity(name: String): Community {
     return Community(
@@ -63,6 +80,7 @@ fun getAllUsers(): List<User> {
     )
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 object CommunityRouteTest: Spek({
     val fakeCommunityRepository: CommunityRepository by memoized { spyk() }
     val fakeTokenValidator = spyk<TokenValidator>()
@@ -176,6 +194,101 @@ object CommunityRouteTest: Spek({
                 }
                 verify { fakeCommunityRepository.deleteFollower( community.id, follower.id!!)}
             }
+        }
+
+        it("should get all followers from community") {
+            withTestApplication({ setup(this) }){
+                val community = generateCommunity("kotlin")
+                val userList = getAllUsers()
+                every { fakeCommunityRepository.fetchFollowers(community.id) } answers { userList }
+                handleRequest(HttpMethod.Get, "/communities/${community.id}/followers") {
+                    addHeader("Content-Type", "application/json")
+                }.apply {
+                    response.content shouldNotBe null
+                    response.status() shouldBe HttpStatusCode.OK
+                    val followers = Json.decodeFromString<List<User>>(response.content!!)
+                    followers shouldBe userList
+                }
+            }
+        }
+
+        it("Should patch properties of a Community by its ID") {
+            withTestApplication({
+                setup(this)
+            }) {
+                val ada = generateUser("ada")
+                val communityOld = generateCommunity("kotlin", ada.id!!, "closed")
+                val communityNew = generateCommunity("kotlin", ada.id!!, "moderated")
+                every { fakeCommunityRepository.fetchCommunity(communityOld.id) } answers { communityOld }
+                every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                every { fakeCommunityRepository.updateCommunity(communityOld.id, communityNew) } answers { communityNew }
+                handleRequest(HttpMethod.Patch, "/communities/${communityOld.id}") {
+                    addHeader("Content-Type", "application/json")
+                    setBody(Json.encodeToString(communityNew))
+                }.apply{
+                    response.content shouldNotBe null
+                    response.status() shouldBe HttpStatusCode.OK
+                    val communityPatched = Json.decodeFromString<Community>(response.content!!)
+                    communityPatched shouldBe communityNew
+                }
+            }
+        }
+
+        it("should be able to create a community if doesn't yet exist") {
+            withTestApplication({ setup(this) }) {
+                val ada = generateUser("Ada")
+                val community = generateCommunity("Kotlin", admin = ada.id!!)
+                every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                every { fakeCommunityRepository.alreadyExists(any()) } answers { false }
+                every { fakeCommunityRepository.insertCommunity(community) } answers { community }
+                handleRequest(HttpMethod.Post, "/communities") {
+                    addHeader("Content-Type", "application/json")
+                    setBody(Json.encodeToString(community))
+                }.apply {
+                    response.content shouldNotBe null
+                    response.status() shouldBe HttpStatusCode.OK
+                    val createdCommunity = Json.decodeFromString<Community>(response.content!!)
+                    createdCommunity shouldBe community
+                }
+            }
+        }
+
+        it("should return 401 when creating a community if user isn't authenticated") {
+            withTestApplication({ setup(this) }) {
+                val community = generateCommunity("Kotlin", admin = "1")
+                every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
+
+                handleRequest(HttpMethod.Post, "/communities") {
+                    addHeader("Content-Type", "application/json")
+                    setBody(Json.encodeToString(community))
+                }.apply {
+                    response.status() shouldBe HttpStatusCode.Unauthorized
+                    verify { fakeCommunityRepository.insertCommunity(any()) wasNot Called }
+                }
+            }
+        }
+        xit("should return 401 if user tries to follow a community if not authenticated") {
+
+        }
+
+        xit("should return 401 if user tries to unfollow a community if not authenticated") {
+
+        }
+
+        xit("should return 401 if user tries to update a community if not authenticated") {
+
+        }
+
+        xit("should return 401 if user tries to update a community if not authenticated") {
+
+        }
+
+        xit("should not create a community if a community with the same name already exists") {
+
+        }
+
+        xit("should not create a community if it lacks a contact") {
+
         }
     }
 })
