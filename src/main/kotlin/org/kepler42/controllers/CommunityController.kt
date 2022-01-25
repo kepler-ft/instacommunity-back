@@ -60,6 +60,9 @@ class CommunityController(private val communityRepository: CommunityRepository) 
         if (community.name == null || !nameIsValid(community.name))
             throw InvalidNameException()
 
+        if (community.contacts.isEmpty())
+            throw InvalidBodyException("A community needs at least one contact")
+
         if (communityRepository.alreadyExists(community.name))
             throw AlreadyExistsException("A community with this name already exists")
 
