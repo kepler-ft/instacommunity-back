@@ -27,6 +27,7 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import java.net.http.HttpRequest
 
 fun generateCommunity(name: String, admin: String = "user-id", type: CommunityType = CommunityType.OPEN): Community {
     return Community(
@@ -356,6 +357,33 @@ object CommunityRouteTest: Spek({
                     setBody(Json.encodeToString(community))
                 }.apply {
                     response.status() shouldBe HttpStatusCode.BadRequest
+                }
+            }
+        }
+
+        it("should not create a community if it has more than 3 contacts") {
+            withTestApplication ({ setup(this) }) {
+                val user = generateUser("Ada")
+                val community = Community(
+                    name = "Kotlin",
+                    description = "kotlin",
+                    admin = user.id!!,
+                    type = CommunityType.OPEN,
+                    contacts = listOf(
+                        Contact(1, "a", "a"),
+                        Contact(2, "b", "b"),
+                        Contact(3, "c", "c"),
+                        Contact(4, "d", "d"),
+                    )
+                )
+                every { fakeTokenValidator.checkAuth(any()) } answers { user.id!! }
+
+                handleRequest(HttpMethod.Post, "/communities") {
+                    addHeader("Content-Type", "application/json")
+                    setBody(Json.encodeToString(community))
+                }.apply {
+                    response.status() shouldBe HttpStatusCode.BadRequest
+                    verify { fakeCommunityRepository wasNot Called }
                 }
             }
         }
