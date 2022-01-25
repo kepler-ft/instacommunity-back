@@ -63,6 +63,9 @@ class CommunityController(private val communityRepository: CommunityRepository) 
         if (community.contacts.isEmpty())
             throw InvalidBodyException("A community needs at least one contact")
 
+        if (community.contacts.size > 3)
+            throw InvalidBodyException("A community can't have more than 3 contacts")
+
         if (communityRepository.alreadyExists(community.name))
             throw AlreadyExistsException("A community with this name already exists")
 
