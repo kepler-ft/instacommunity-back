@@ -52,16 +52,24 @@ class CommunityRepositoryImpl: CommunityRepository {
     override fun insertCommunity(community: Community): Community {
         val newCommunity = transaction {
             addLogger(StdOutSqlLogger)
-            CommunityEntity.new {
+            val createdCommunity = CommunityEntity.new {
                 name = community.name!!
                 description = community.description!!
-                contact = community.contact!!
-                contact2 = community.contact2
-                contact3 = community.contact3
-                creator = EntityID(community.admin!!, UsersTable)
+                admin = EntityID(community.admin!!, UsersTable)
+                slug = community.slug!!
+                type = community.type!!
+                photo_url = community.photo_url!!
             }
+            for (contact in community.contacts) {
+                ContactEntity.new {
+                    this.community = createdCommunity
+                    this.title = contact.title!!
+                    this.link = contact.link
+                }
+            }
+            createdCommunity.toModel()
         }
-        return newCommunity.toModel()
+        return newCommunity
     }
 
     override fun insertFollower(userId: String, communityId: Int) {
@@ -91,7 +99,7 @@ class CommunityRepositoryImpl: CommunityRepository {
             val follows =
                 UserCommunityEntity.find {
                     (UsersCommunities.user_id eq userId) and
-                        (UsersCommunities.community_id eq communityId)
+                    (UsersCommunities.community_id eq communityId)
                 }
             follows.any()
         }
@@ -118,11 +126,10 @@ class CommunityRepositoryImpl: CommunityRepository {
         return transaction {
             addLogger(StdOutSqlLogger)
             val oldCommunity = CommunityEntity.findById(id) ?: return@transaction null
-            community.name?.let { oldCommunity?.name = community.name }
-            community.description?.let { oldCommunity?.description = community.description }
-            community.contact?.let { oldCommunity?.contact = community.contact }
-            community.contact2?.let { oldCommunity?.contact2 = community.contact2 }
-            community.contact3?.let { oldCommunity?.contact3 = community.contact3 }
+            community.name?.let { oldCommunity.name = community.name }
+            community.description?.let { oldCommunity.description = community.description }
+            community.admin?.let { oldCommunity.admin = EntityID(community.admin, UsersTable) }
+            community.photo_url?.let { oldCommunity.photo_url = community.photo_url }
             oldCommunity.toModel()
         }
     }

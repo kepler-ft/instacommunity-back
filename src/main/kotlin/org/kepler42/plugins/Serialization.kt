@@ -6,7 +6,13 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
+import kotlinx.serialization.json.Json
 
 fun Application.configureSerialization() {
-    install(ContentNegotiation) { json() }
+    install(ContentNegotiation) {
+        json( Json {
+            ignoreUnknownKeys = true
+            prettyPrint = true
+        })
+    }
 }

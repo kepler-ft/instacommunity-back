@@ -10,7 +10,7 @@ CREATE TABLE users (
     photo_url VARCHAR
 );
 
-CREATE TYPE community_type AS ENUM ('open', 'moderated', 'managed');
+CREATE TYPE community_type AS ENUM ('OPEN', 'MODERATED', 'MANAGED');
 
 CREATE TABLE communities (
      id SERIAL PRIMARY KEY,
@@ -78,7 +78,7 @@ VALUES ('Getting Started',
         'os quais tem raios menores do que o raio da Terra, e, ' ||
         'provavelmente, também são menores em massa.', 'batatinhafrita123',
         'getting-started',
-        'https://pt.wikipedia.org/wiki/Kepler-42#/media/Ficheiro:Artist''s_conception_of_Kepler-42.jpg', 'open');
+        'https://pt.wikipedia.org/wiki/Kepler-42#/media/Ficheiro:Artist''s_conception_of_Kepler-42.jpg', 'OPEN');
 
 INSERT INTO communities_followers(user_id, community_id)
 VALUES ('batatinhafrita123', 1);

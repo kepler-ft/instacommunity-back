@@ -13,8 +13,7 @@ object UsersTable : IdTable<String>("users") {
     val username = varchar("username", 200)
     val occupation = varchar("occupation", 200)
     val email = varchar("email", 200)
-    val usePhoto = bool("use_photo")
-    val photoURL = varchar("photo_url",200)
+    val photoURL = varchar("photo_url",200).nullable()
 }
 
 // this class represents the row from the table
@@ -25,7 +24,6 @@ class UserEntity(id: EntityID<String>) : Entity<String>(id) {
     var username by UsersTable.username
     var occupation by UsersTable.occupation
     var email by UsersTable.email
-    var usePhoto by UsersTable.usePhoto
     var photoURL by UsersTable.photoURL
     var communities by CommunityEntity via UsersCommunities
 
@@ -35,7 +33,6 @@ class UserEntity(id: EntityID<String>) : Entity<String>(id) {
             this.name,
             this.username,
             this.occupation,
-            this.usePhoto,
             this.photoURL,
             this.email)
     }

@@ -6,7 +6,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.kepler42.models.*
 
 // object that represents a table from the database
-object UsersCommunities : IntIdTable("users_communities") {
+object UsersCommunities : IntIdTable("communities_followers") {
     val user_id = reference("user_id", UsersTable)
     val community_id = reference("community_id", CommunitiesTable)
 }

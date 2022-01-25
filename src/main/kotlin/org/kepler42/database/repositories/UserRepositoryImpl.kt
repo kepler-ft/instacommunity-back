@@ -32,8 +32,7 @@ class UserRepositoryImpl: UserRepository {
                 it[username] = user.username!!
                 it[email] = user.email!!
                 it[occupation] = user.occupation!!
-                it[usePhoto] = user.usePhoto!!
-                it[photoURL] = user.photoURL!!
+                it[photoURL] = user.photoURL
             }
         }
         return user
@@ -45,7 +44,6 @@ class UserRepositoryImpl: UserRepository {
             val oldUser = user.id?.let { UserEntity.findById(it) }
             user.name?.let { oldUser?.name = user.name }
             user.occupation?.let { oldUser?.occupation = user.occupation }
-            user.usePhoto?.let { oldUser?.usePhoto = user.usePhoto}
             user.photoURL?.let { oldUser?.photoURL = user.photoURL}
             oldUser?.toModel()
         }

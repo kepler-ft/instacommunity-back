@@ -5,6 +5,7 @@ import org.kepler42.database.entities.CommunityEntity
 import org.kepler42.errors.*
 
 interface CommunityRepository {
+
     fun fetchCommunity(id: Int): Community?
     fun fetchCommunitiesByName(name: String): List<Community>?
     fun insertCommunity(community: Community): Community

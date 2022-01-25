@@ -8,7 +8,6 @@ import org.jetbrains.exposed.sql.Concat
     val name: String? = null,
     val username: String? = null,
     val occupation: String? = null,
-    val usePhoto: Boolean? = null,
     val photoURL: String? = null,
     val email: String? = null,
     val contact: Contact? = null,
