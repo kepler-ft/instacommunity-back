@@ -18,6 +18,7 @@ import org.kepler42.controllers.CommunityRepository
 import org.kepler42.controllers.UserController
 import org.kepler42.database.repositories.UserRepository
 import org.kepler42.models.Community
+import org.kepler42.models.CommunityType
 import org.kepler42.models.User
 import org.kepler42.plugins.configureRouting
 import org.kepler42.plugins.configureSerialization
@@ -39,8 +40,10 @@ object UserRouteTest : Spek({
     val fakeCommunityRepository = mockk<CommunityRepository>()
     val ada = User( "batatinhafrita123", "Ada Luvlace", "ada" )
     val roberto = User( "leavemealone", "Roberto T. Ishimura", "roberto-ti" )
-    val gettingStarted = Community(1, "Getting Started", "Kepler-42", "facebook.com", "", "", "batatinhafrita123", "getting-start", "troll", "open", contacts = emptyList())
-    val kotlinCommunity = Community(1, "kotlin", "kotlin", "kotlin.com", "", "", "leavemealone", "kotlin", "troll", "open", contacts = emptyList())
+    val gettingStarted = Community(1, "Getting Started", "Kepler-42", "facebook.com", "", "", "batatinhafrita123", "getting-start", "troll",
+        CommunityType.OPEN, contacts = emptyList())
+    val kotlinCommunity = Community(1, "kotlin", "kotlin", "kotlin.com", "", "", "leavemealone", "kotlin", "troll",
+        CommunityType.OPEN, contacts = emptyList())
     val adaCommunities = listOf(gettingStarted)
     val robertoCommunities = listOf(gettingStarted, kotlinCommunity)
     val usernameSlot = slot<String>()

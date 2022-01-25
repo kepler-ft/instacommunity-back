@@ -49,16 +49,22 @@ class CommunityController(private val communityRepository: CommunityRepository) 
     fun getCommunityFollowers(communityId: Int) =
             communityRepository.fetchFollowers(communityId)
 
-    fun updateCommunity(userId: String, id: Int, community: Community) {
+    fun updateCommunity(userId: String, id: Int, community: Community): Community {
         val comm = communityRepository.fetchCommunity(id) ?: throw ResourceNotFoundException()
         if (comm.admin != userId)
             throw UnauthorizedException()
-        communityRepository.updateCommunity(id, community)
+        return communityRepository.updateCommunity(id, community) ?: throw ResourceNotFoundException("Community not found")
     }
 
     fun createCommunity(community: Community): Community {
         if (community.name == null || !nameIsValid(community.name))
             throw InvalidNameException()
+
+        if (community.contacts.isEmpty())
+            throw InvalidBodyException("A community needs at least one contact")
+
+        if (community.contacts.size > 3)
+            throw InvalidBodyException("A community can't have more than 3 contacts")
 
         if (communityRepository.alreadyExists(community.name))
             throw AlreadyExistsException("A community with this name already exists")
