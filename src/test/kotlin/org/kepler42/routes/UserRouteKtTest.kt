@@ -40,10 +40,8 @@ object UserRouteTest : Spek({
     val fakeCommunityRepository = mockk<CommunityRepository>()
     val ada = User( "batatinhafrita123", "Ada Luvlace", "ada" )
     val roberto = User( "leavemealone", "Roberto T. Ishimura", "roberto-ti" )
-    val gettingStarted = Community(1, "Getting Started", "Kepler-42", "facebook.com", "", "", "batatinhafrita123", "getting-start", "troll",
-        CommunityType.OPEN, contacts = emptyList())
-    val kotlinCommunity = Community(1, "kotlin", "kotlin", "kotlin.com", "", "", "leavemealone", "kotlin", "troll",
-        CommunityType.OPEN, contacts = emptyList())
+    val gettingStarted = generateCommunity("Getting Started")
+    val kotlinCommunity = generateCommunity("Kotlin")
     val adaCommunities = listOf(gettingStarted)
     val robertoCommunities = listOf(gettingStarted, kotlinCommunity)
     val usernameSlot = slot<String>()
