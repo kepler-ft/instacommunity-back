@@ -1,3 +1,3 @@
 package org.kepler42.errors
 
-class EmptyBodyException(message: String = "Empty request body"): Exception(message)
+class InvalidBodyException(message: String = "Invalid request body"): Exception(message)
