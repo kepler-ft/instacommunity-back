@@ -117,13 +117,13 @@ class CommunityRepositoryImpl: CommunityRepository {
     override fun updateCommunity(id: Int, community: Community): Community? {
         return transaction {
             addLogger(StdOutSqlLogger)
-            val oldCommunity = CommunityEntity.findById(id)
+            val oldCommunity = CommunityEntity.findById(id) ?: return@transaction null
             community.name?.let { oldCommunity?.name = community.name }
             community.description?.let { oldCommunity?.description = community.description }
             community.contact?.let { oldCommunity?.contact = community.contact }
             community.contact2?.let { oldCommunity?.contact2 = community.contact2 }
             community.contact3?.let { oldCommunity?.contact3 = community.contact3 }
-            oldCommunity?.toModel()
+            oldCommunity.toModel()
         }
     }
 }
