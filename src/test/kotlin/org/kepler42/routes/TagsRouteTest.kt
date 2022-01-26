@@ -5,6 +5,9 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.mockk.*
 import io.ktor.server.testing.*
+import io.ktor.util.Identity.decode
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.kepler42.controllers.CommunityController
 import org.kepler42.controllers.TagController
@@ -47,8 +50,8 @@ object TagsRouteTest : Spek({
             withTestApplication({ setup(this) }) {
                 val tagList = generateTags()
                 every { fakeTagRepository.getAll() } answers { tagList }
-                handleRequest(HttpMethod.Get, "/tags").apply {
-
+                handleRequest(HttpMethod.Get, "/tags"){
+                }.apply{
                     response.status() shouldBe HttpStatusCode.OK
                     val tagListResult = Json.decodeFromString<List<Tag>>(response.content!!)
                     tagListResult shouldBe tagList
