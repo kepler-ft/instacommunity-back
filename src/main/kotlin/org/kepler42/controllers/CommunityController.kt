@@ -33,8 +33,8 @@ class CommunityController(private val communityRepository: CommunityRepository) 
     }
 
     fun getAll(desiredPage: Long): List<Community> {
-        val page = if (desiredPage >= 0) desiredPage
-                   else 0
+        val page = if (desiredPage > 0) desiredPage
+                   else 1
         return communityRepository.fetchAllCommunities(page)
     }
 
