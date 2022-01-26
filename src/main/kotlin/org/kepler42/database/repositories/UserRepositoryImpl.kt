@@ -6,6 +6,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.kepler42.database.entities.UsersTable
+import org.kepler42.errors.InvalidBodyException
+import org.kepler42.errors.ResourceNotFoundException
 
 interface UserRepository {
     fun getUserById(id: String): User?
@@ -30,9 +32,12 @@ class UserRepositoryImpl: UserRepository {
                 it[id] = user.id
                 it[name] = user.name!!
                 it[username] = user.username!!
+                it[about] = user.about
                 it[email] = user.email!!
                 it[occupation] = user.occupation!!
                 it[photoURL] = user.photoURL
+                it[contact_link] = user.contact?.link
+                it[contact_title] = user.contact?.title
             }
         }
         return user
@@ -41,11 +46,18 @@ class UserRepositoryImpl: UserRepository {
     override fun changeUser(user: User): User? {
         return transaction {
             addLogger(StdOutSqlLogger)
-            val oldUser = user.id?.let { UserEntity.findById(it) }
-            user.name?.let { oldUser?.name = user.name }
-            user.occupation?.let { oldUser?.occupation = user.occupation }
-            user.photoURL?.let { oldUser?.photoURL = user.photoURL}
-            oldUser?.toModel()
+            if (user.id == null)
+                throw InvalidBodyException()
+            val oldUser = user.id.let { UserEntity.findById(it) } ?: return@transaction null
+            user.name?.let { oldUser.name = user.name }
+            user.occupation?.let { oldUser.occupation = user.occupation }
+            user.about?.let { oldUser.about = user.about }
+            user.photoURL?.let { oldUser.photoURL = user.photoURL}
+            user.contact?.let {
+                oldUser.contact_link = user.contact.link
+                oldUser.contact_title = user.contact.title
+            }
+            oldUser.toModel()
         }
     }
 

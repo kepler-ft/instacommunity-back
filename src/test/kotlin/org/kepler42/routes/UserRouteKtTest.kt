@@ -18,7 +18,7 @@ import org.kepler42.controllers.CommunityRepository
 import org.kepler42.controllers.UserController
 import org.kepler42.database.repositories.UserRepository
 import org.kepler42.models.Community
-import org.kepler42.models.CommunityType
+import org.kepler42.testUtils.*
 import org.kepler42.models.User
 import org.kepler42.plugins.configureRouting
 import org.kepler42.plugins.configureSerialization

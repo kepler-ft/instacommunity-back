@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
     val name: String? = null,
     val username: String? = null,
     val occupation: String? = null,
+    val about: String? = null,
     val photoURL: String? = null,
     val email: String? = null,
     val contact: Contact? = null,
