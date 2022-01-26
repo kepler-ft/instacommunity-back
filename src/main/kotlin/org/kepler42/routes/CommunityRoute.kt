@@ -19,6 +19,7 @@ fun Route.communityRoute() {
     route("/communities") {
         get {
             val communityNameToFind =  call.request.queryParameters["name"]
+            val desiredPage = call.request.queryParameters["page"]
             try {
                 val communities = if (communityNameToFind.isNullOrEmpty())
                     communityController.getAll()

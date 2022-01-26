@@ -33,10 +33,15 @@ class CommunityRepositoryImpl: CommunityRepository {
         return communities
     }
 
-    override fun fetchAllCommunities(): List<Community> {
+    override fun fetchAllCommunities(page: Long): List<Community> {
+        val pageSize = 5
         val communities = transaction {
             addLogger(StdOutSqlLogger)
-            CommunityEntity.all().orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC).toList().map { it.toModel() }
+            CommunityEntity
+                .all()
+                .orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC)
+                .limit(pageSize, pageSize * (page - 1))
+                .toList().map { it.toModel() }
         }
         return communities
     }

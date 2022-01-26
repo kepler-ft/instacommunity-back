@@ -14,7 +14,7 @@ interface CommunityRepository {
     fun alreadyExists(communityName: String): Boolean
     fun fetchFollowers(id: Int): List<User>?
     fun updateCommunity(id: Int, community: Community): Community?
-    fun fetchAllCommunities(): List<Community>
+    fun fetchAllCommunities(page: Long): List<Community>
     fun fetchCommunitiesFollowedByUser(userId: String): List<Community>?
     fun checkAlreadyFollows(userId: String, communityId: Int): Boolean
 }
@@ -32,8 +32,10 @@ class CommunityController(private val communityRepository: CommunityRepository) 
         return communityRepository.fetchCommunitiesByName(communityNameToFind) ?: emptyList()
     }
 
-    fun getAll(): List<Community> {
-        return communityRepository.fetchAllCommunities()
+    fun getAll(desiredPage: Long): List<Community> {
+        val page = if (desiredPage >= 0) desiredPage
+                   else 0
+        return communityRepository.fetchAllCommunities(page)
     }
 
     fun addFollower(userId: String, communityId: Int) {

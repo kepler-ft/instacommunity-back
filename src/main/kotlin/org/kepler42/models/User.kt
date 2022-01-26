@@ -1,7 +1,6 @@
 package org.kepler42.models
 
 import kotlinx.serialization.Serializable
-import org.jetbrains.exposed.sql.Concat
 
 @Serializable data class User(
     val id: String? = null,
