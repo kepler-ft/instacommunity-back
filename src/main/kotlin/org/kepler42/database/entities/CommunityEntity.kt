@@ -28,6 +28,7 @@ class CommunityEntity(id: EntityID<Int>) : Entity<Int>(id) {
     var photo_url by CommunitiesTable.photo_url
     var type by CommunitiesTable.type
     val contacts by ContactEntity referrersOn ContactsTable.community
+    var tags by TagEntity via CommunitiesTagsTable
     var slug by CommunitiesTable.slug
 
     fun toModel(): Community {
