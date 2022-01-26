@@ -114,15 +114,15 @@ object CommunityRouteTest: Spek({
     }
 
     describe("Community route") {
-        it("by searching communities without url query, it should find all communities") {
+        it("should get the 5 first communities in the database") {
             withTestApplication({ setup(this) }) {
                 val allCommunities = getAllCommunities()
-                every { fakeCommunityRepository.fetchAllCommunities() } answers { allCommunities }
+                every { fakeCommunityRepository.fetchAllCommunities(any()) } answers { allCommunities.subList(0, 5) }
 
                 handleRequest(HttpMethod.Get, "/communities").apply {
                     response.content shouldNotBe null
                     val results = Json.decodeFromString<List<Community>>(response.content!!)
-                    results shouldBe allCommunities
+                    results shouldBe allCommunities.subList(0, 5)
                 }
             }
         }
