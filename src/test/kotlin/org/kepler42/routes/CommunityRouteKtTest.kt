@@ -1,6 +1,5 @@
 package org.kepler42.routes;
 
-import com.google.api.Http
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -8,13 +7,13 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.server.testing.*
 import io.mockk.*
+import org.kepler42.testUtils.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.kepler42.controllers.CommunityRepository
 import org.kepler42.models.Community
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonDecoder
 import org.kepler42.controllers.CommunityController
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.CommunityType
@@ -27,72 +26,6 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import java.net.http.HttpRequest
-
-fun generateCommunity(name: String, admin: String = "user-id", type: CommunityType = CommunityType.OPEN): Community {
-    return Community(
-        id = name.hashCode(),
-        name = name,
-        slug = name.lowercase(),
-        admin = admin,
-        type = type,
-        contacts = listOf(
-            Contact(1, title = "Discord", link = "ada#7777"),
-            Contact(2, title = "Discord", link = "ada#7777"),
-            Contact(3, title = "Discord", link = "ada#7777"),
-        )
-    )
-}
-
-fun generateCommunityWithoutContact(name: String, admin: String = "user-id", type: CommunityType = CommunityType.OPEN): Community {
-    return Community(
-        id = name.hashCode(),
-        name = name,
-        slug = name.lowercase(),
-        admin = admin,
-        type = type,
-        contacts = emptyList()
-    )
-}
-
-fun generateCommunity(name: String): Community {
-    return Community(
-        id = name.hashCode(),
-        name = name,
-        slug = name.lowercase(),
-        admin = "user-id",
-        type = CommunityType.OPEN,
-        contacts = emptyList()
-    )
-}
-
-fun generateUser(name: String) : User {
-    return User(
-        id = name.hashCode().toString(),
-        name = name,
-        username = name.lowercase(),
-        occupation = "dev",
-        photoURL = "https://i.kym-cdn.com/entries/icons/original/000/017/108/faustooooooooooooooooooo.jpg",
-        email = "user@gmail.com",
-        contact = Contact(0, "Ada#7777", null),
-    )
-}
-
-fun getAllCommunities(): List<Community> {
-    return listOf(
-        generateCommunity("Kotlin"),
-        generateCommunity("C"),
-        generateCommunity("Java"),
-    )
-}
-
-fun getAllUsers(): List<User> {
-    return listOf(
-        generateUser("Ada"),
-        generateUser("Roberto"),
-        generateUser("Fausto"),
-    )
-}
 
 @OptIn(ExperimentalSerializationApi::class)
 object CommunityRouteTest: Spek({
