@@ -15,6 +15,7 @@ fun Route.tagRoute() {
         get {
             try {
                 val tags = tagController.getAll()
+                call.respond(tags)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e))
             }
