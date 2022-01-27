@@ -1,11 +1,9 @@
 package org.kepler42.testUtils
 
-import org.kepler42.models.Community
-import org.kepler42.models.CommunityType
-import org.kepler42.models.Contact
-import org.kepler42.models.User
+import org.kepler42.models.*
 
 fun generateCommunity(name: String, admin: String = "user-id", type: CommunityType = CommunityType.OPEN): Community {
+    val tags = generateTags()
     return Community(
         id = name.hashCode(),
         name = name,
@@ -16,7 +14,8 @@ fun generateCommunity(name: String, admin: String = "user-id", type: CommunityTy
             Contact(1, title = "Discord", link = "ada#7777"),
             Contact(2, title = "Discord", link = "ada#7777"),
             Contact(3, title = "Discord", link = "ada#7777"),
-        )
+        ),
+        tags = listOf(tags[0], tags[1])
     )
 }
 
@@ -27,18 +26,20 @@ fun generateCommunityWithoutContact(name: String, admin: String = "user-id", typ
         slug = name.lowercase(),
         admin = admin,
         type = type,
-        contacts = emptyList()
+        contacts = emptyList(),
     )
 }
 
-fun generateCommunity(name: String): Community {
+fun generateCommunity(name: String, tag: Int = 1): Community {
+    val tags = generateTags()
     return Community(
         id = name.hashCode(),
         name = name,
         slug = name.lowercase(),
         admin = "user-id",
         type = CommunityType.OPEN,
-        contacts = emptyList()
+        contacts = emptyList(),
+        tags = listOf(tags[tag - 1])
     )
 }
 
@@ -71,5 +72,13 @@ fun getAllUsers(): List<User> {
         generateUser("Ada"),
         generateUser("Roberto"),
         generateUser("Fausto"),
+    )
+}
+
+fun generateTags(): List<Tag> {
+    return listOf(
+        Tag(1, "Dev"),
+        Tag(2, "DevOps"),
+        Tag(3, "Lazer"),
     )
 }

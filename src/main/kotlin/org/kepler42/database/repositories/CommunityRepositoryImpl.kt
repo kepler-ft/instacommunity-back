@@ -14,6 +14,10 @@ infix fun <T : String?> ExpressionWithColumnType<T>.ilike(pattern: String): Op<B
         ILikeOp(this, QueryParameter(pattern, columnType))
 
 class CommunityRepositoryImpl: CommunityRepository {
+    override fun search(name: String?, tags: List<Int>?): List<Community>? {
+        TODO("Not yet implemented")
+    }
+
     override fun fetchCommunity(id: Int): Community? {
         val community = transaction {
             addLogger(StdOutSqlLogger)

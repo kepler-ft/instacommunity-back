@@ -6,6 +6,7 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import org.kepler42.controllers.*
+import org.kepler42.database.repositories.CommunityRepositoryImpl
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.*
 import org.kepler42.utils.TokenValidator
@@ -20,11 +21,14 @@ fun Route.communityRoute() {
         get {
             val communityNameToFind =  call.request.queryParameters["name"]
             val desiredPage = call.request.queryParameters["page"] ?: "1"
+            val tagString = call.request.queryParameters["tags"] // "4,2,3"
             try {
-                val communities = if (communityNameToFind.isNullOrEmpty())
+                val communities = if ( communityNameToFind.isNullOrEmpty() && tagString.isNullOrEmpty() )
                     communityController.getAll(desiredPage.toLong())
-                else
-                    communityController.searchByName(communityNameToFind)
+                else {
+                    val tagList = tagString?.split(",")?.map { it.toInt() }
+                    communityController.search(communityNameToFind, tagList)
+                }
                 call.respond(communities)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e))

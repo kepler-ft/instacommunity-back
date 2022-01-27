@@ -12,13 +12,10 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import org.kepler42.controllers.CommunityRepository
-import org.kepler42.models.Community
 import kotlinx.serialization.json.Json
 import org.kepler42.controllers.CommunityController
 import org.kepler42.errors.UnauthorizedException
-import org.kepler42.models.CommunityType
-import org.kepler42.models.Contact
-import org.kepler42.models.User
+import org.kepler42.models.*
 import org.kepler42.plugins.configureRouting
 import org.kepler42.plugins.configureSerialization
 import org.kepler42.utils.TokenValidator
@@ -64,7 +61,7 @@ object CommunityRouteTest: Spek({
             withTestApplication ({ setup(this) }) {
                 val javaCommunity = generateCommunity("Java")
 
-                every { fakeCommunityRepository.fetchCommunitiesByName("Java")} answers  {
+                every { fakeCommunityRepository.search("Java", any())} answers  {
                     listOf(javaCommunity)
                 }
 
@@ -95,7 +92,7 @@ object CommunityRouteTest: Spek({
         it("by searching communities with url query, it should find one community") {
             withTestApplication({ setup(this) }) {
                 val kotlinCommunity = generateCommunity("Kotlin")
-                every { fakeCommunityRepository.fetchCommunitiesByName("Kotlin") } answers {
+                every { fakeCommunityRepository.search("Kotlin", any()) } answers {
                     listOf(kotlinCommunity)
                 }
                 handleRequest(HttpMethod.Get, "/communities?name=Kotlin").apply {
@@ -345,6 +342,76 @@ object CommunityRouteTest: Spek({
                 }
             }
         }
+        it("should filter a community list by an specific tag") {
+            withTestApplication ({ setup(this) }) {
+                val communityList = listOf(
+                    generateCommunity("Kotlin", 1),
+                    generateCommunity("Java", 1)
+                )
+                val filterTags = listOf(1)
+                val tagString = filterTags.joinToString(",")
+                every { fakeCommunityRepository.search(name = null, tags = filterTags) } answers { communityList }
+                handleRequest(HttpMethod.Get, "/communities?tags=${tagString}") {
+                }.apply {
+                    response.status() shouldBe HttpStatusCode.OK
+                    val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
+                    communityListResult shouldBe communityList
+                }
+            }
 
+        }
+
+        it("should filter a community list by name and an specific tag") {
+            withTestApplication ({ setup(this) }) {
+                val filterTags = listOf(1)
+                val name = "Java"
+                val expectedList = listOf(
+                    generateCommunity("Java", 1),
+                    generateCommunity("Javascript", 1),
+                    generateCommunity("Javascript", 1),
+                )
+                every { fakeCommunityRepository.search(name = name, tags = filterTags) } answers { expectedList }
+                val tagString = filterTags.joinToString(",")
+                handleRequest(HttpMethod.Get, "/communities?tags=${tagString}&name=${name}").apply {
+                    response.status() shouldBe HttpStatusCode.OK
+                    val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
+                    communityListResult shouldBe expectedList
+                }
+            }
+
+        }
+
+        it("should filter a community list from multiple tags") {
+            withTestApplication ({ setup(this) }) {
+                val filterTags = listOf(1, 3)
+                val expectedList = listOf(
+                    generateCommunity("Java", 1),
+                    generateCommunity("Javascript", 1),
+                    generateCommunity("DotaJava", 3),
+                )
+                every { fakeCommunityRepository.search(name = null, tags = filterTags) } answers { expectedList }
+                val tagString = filterTags.joinToString(",")
+                handleRequest(HttpMethod.Get, "/communities?tags=${tagString}").apply {
+                    response.status() shouldBe HttpStatusCode.OK
+                    val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
+                    communityListResult shouldBe expectedList
+                }
+            }
+
+        }
+        it("should return an empty list if searching a community name that doesnt exist even with tags") {
+            withTestApplication ({ setup(this) }) {
+                val filterTags = listOf(1, 3)
+                val name = "Non Java"
+                every { fakeCommunityRepository.search(name = name, tags = filterTags) } answers { emptyList() }
+                val tagString = filterTags.joinToString(",")
+                handleRequest(HttpMethod.Get, "/communities?tags=${tagString}").apply {
+                    response.status() shouldBe HttpStatusCode.OK
+                    val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
+                    communityListResult shouldBe emptyList()
+                }
+            }
+
+        }
     }
 })

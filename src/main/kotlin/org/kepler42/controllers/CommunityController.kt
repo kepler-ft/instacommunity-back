@@ -5,7 +5,7 @@ import org.kepler42.database.entities.CommunityEntity
 import org.kepler42.errors.*
 
 interface CommunityRepository {
-
+    fun search(name: String? = null,  tags: List<Int>? = null): List<Community>?
     fun fetchCommunity(id: Int): Community?
     fun fetchCommunitiesByName(name: String): List<Community>?
     fun insertCommunity(community: Community): Community
@@ -28,8 +28,8 @@ class CommunityController(private val communityRepository: CommunityRepository) 
             ?: throw ResourceNotFoundException("Community Not Found")
     }
 
-    fun searchByName(communityNameToFind: String): List<Community> {
-        return communityRepository.fetchCommunitiesByName(communityNameToFind) ?: emptyList()
+    fun search(name: String?, tagId: List<Int>?): List<Community> {
+        return communityRepository.search(name, tagId) ?: emptyList()
     }
 
     fun getAll(desiredPage: Long): List<Community> {

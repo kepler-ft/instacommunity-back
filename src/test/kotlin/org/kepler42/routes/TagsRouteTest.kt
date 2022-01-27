@@ -22,13 +22,7 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 
 
-fun generateTags(): List<Tag> {
-    return listOf(
-        Tag(1, "Dev"),
-        Tag(2, "DevOps"),
-        Tag(3, "Lazer"),
-    )
-}
+
 
 object TagsRouteTest : Spek({
 
