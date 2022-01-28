@@ -419,5 +419,24 @@ object CommunityRouteTest: Spek({
                 }
             }
         }
+
+        describe("moderators route") {
+            it("should get a list of a community's moderators") {
+                withTestApplication ({ setup(this) }) {
+                    val community = generateCommunity("Kotlin")
+                    val moderators = listOf(
+                        generateUser("Ada"),
+                        generateUser("Roberto"),
+                    )
+                    every { fakeCommunityRepository.fetchModerators(any()) } answers { moderators }
+
+                    handleRequest(HttpMethod.Get, "/communities/${community.id}/moderators").apply {
+                        response.status() shouldBe HttpStatusCode.OK
+                        val result = Json.decodeFromString<List<User>>(response.content!!)
+                        result shouldBe moderators
+                    }
+                }
+            }
+        }
     }
 })
