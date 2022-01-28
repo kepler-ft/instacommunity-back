@@ -67,7 +67,7 @@ class CommunityRepositoryImpl: CommunityRepository {
                 admin = EntityID(community.admin!!, UsersTable)
                 slug = community.slug!!
                 type = community.type!!
-                photo_url = community.photo_url!!
+                photo_url = community.photoURL!!
             }
             for (contact in community.contacts) {
                 ContactEntity.new {
@@ -138,7 +138,7 @@ class CommunityRepositoryImpl: CommunityRepository {
             community.name?.let { oldCommunity.name = community.name }
             community.description?.let { oldCommunity.description = community.description }
             community.admin?.let { oldCommunity.admin = EntityID(community.admin, UsersTable) }
-            community.photo_url?.let { oldCommunity.photo_url = community.photo_url }
+            community.photoURL?.let { oldCommunity.photo_url = community.photoURL }
             oldCommunity.toModel()
         }
     }
