@@ -24,7 +24,6 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import kotlin.test.assertNotNull
 
 @OptIn(ExperimentalSerializationApi::class)
 object CommunityRouteTest: Spek({
@@ -497,6 +496,26 @@ object CommunityRouteTest: Spek({
                     }.apply {
                         response.status() shouldBe HttpStatusCode.Forbidden
                         verify(inverse = true) { fakeCommunityRepository.insertCommunity(any()) }
+                    }
+                }
+            }
+
+            it("should not be able to remove a moderator if not admin") {
+                withTestApplication ({ setup(this) }) {
+                    val actualAdmin = generateUser("Admin")
+                    val moderator = generateUser("Ada")
+                    val community = generateCommunity("Kotlin", admin = actualAdmin.id!!)
+                    val loggedUser = generateUser("Not admin")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { loggedUser.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(community.id) } answers { community }
+                    every { fakeUserRepository.getUserById(moderator.id!!) } answers { moderator }
+
+                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/moderators/${moderator.id}") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(moderator))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.Forbidden
+                        verify(inverse = true) { fakeCommunityRepository.deleteModerator(any(), any()) }
                     }
                 }
             }
