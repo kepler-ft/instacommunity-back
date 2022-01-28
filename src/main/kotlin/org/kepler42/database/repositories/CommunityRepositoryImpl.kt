@@ -26,6 +26,17 @@ class CommunityRepositoryImpl: CommunityRepository {
         return community
     }
 
+    override fun fetchCommunityBySlug(slug: String): Community? {
+        val community = transaction {
+            addLogger(StdOutSqlLogger)
+            CommunityEntity
+                .find { CommunitiesTable.slug ilike "%$slug%" }
+                .map { it.toModel() }
+                .first()
+            }
+            return community
+        }
+
     override fun fetchCommunitiesByName(name: String): List<Community>? {
         val communities = transaction {
             addLogger(StdOutSqlLogger)

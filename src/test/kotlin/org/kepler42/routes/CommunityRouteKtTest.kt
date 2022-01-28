@@ -411,7 +411,17 @@ object CommunityRouteTest: Spek({
                     communityListResult shouldBe emptyList()
                 }
             }
-
+        }
+        it("should get community by slug") {
+            withTestApplication ({ setup(this) }) {
+                val community = generateCommunity("Python", 1)
+                every { fakeCommunityRepository.fetchCommunityBySlug(slug = "python")} answers { community }
+                handleRequest(HttpMethod.Get, "/communities?slug=${"python"}").apply {
+                    response.status() shouldBe HttpStatusCode.OK
+                    val communityResult = Json.decodeFromString<Community>(response.content!!)
+                    communityResult shouldBe community
+                }
+            }
         }
     }
 })
