@@ -18,9 +18,10 @@ fun Route.moderatorsRoutes() {
     route("/communities/{communityId}/moderators") {
         get {
             try {
-                val communityId = call.parameters["communityId"] ?: throw ResourceNotFoundException()
-                val moderators =
-                    communityRepository.fetchModerators(communityId.toInt()) ?: throw ResourceNotFoundException()
+                val communityId = call.parameters["communityId"]
+                    ?: throw ResourceNotFoundException()
+                val moderators = communityRepository.fetchModerators(communityId.toInt())
+                    ?: throw ResourceNotFoundException()
                 call.respond(moderators)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
@@ -30,9 +31,10 @@ fun Route.moderatorsRoutes() {
         post {
             try {
                 val user = call.receive<User>()
-                val communityId = call.parameters["communityId"] ?: throw ResourceNotFoundException()
-                communityRepository.insertModerator(communityId.toInt(), user)
-                call.respond(user)
+                val communityId = call.parameters["communityId"]
+                    ?: throw ResourceNotFoundException()
+                val result = communityRepository.insertModerator(communityId.toInt(), user)
+                call.respond(result)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
