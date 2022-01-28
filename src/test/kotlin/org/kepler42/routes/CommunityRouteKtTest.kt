@@ -14,6 +14,7 @@ import kotlinx.serialization.encodeToString
 import org.kepler42.controllers.CommunityRepository
 import kotlinx.serialization.json.Json
 import org.kepler42.controllers.CommunityController
+import org.kepler42.database.repositories.UserRepository
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.*
 import org.kepler42.plugins.configureRouting
@@ -23,9 +24,11 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import kotlin.test.assertNotNull
 
 @OptIn(ExperimentalSerializationApi::class)
 object CommunityRouteTest: Spek({
+    val fakeUserRepository by memoized {spyk<UserRepository>()}
     val fakeCommunityRepository by memoized {spyk<CommunityRepository>()}
     val fakeTokenValidator = spyk<TokenValidator>()
     every { fakeTokenValidator.checkAuth(any()) } answers { "user-id" }
@@ -33,6 +36,7 @@ object CommunityRouteTest: Spek({
     fun setup(app: Application) {
         val testKoinModule = module {
             single { fakeCommunityRepository }
+            single { fakeUserRepository }
             single { fakeTokenValidator }
             single { CommunityController(get()) }
         }
@@ -444,8 +448,8 @@ object CommunityRouteTest: Spek({
                     val moderator = generateUser("Ada")
                     val community = generateCommunity("Kotlin", admin = admin.id!!)
                     every { fakeTokenValidator.checkAuth(any()) } answers { admin.id!! }
-                    val userSlot = slot<User>()
-                    every { fakeCommunityRepository.insertModerator(community.id, capture(userSlot)) } answers { userSlot.captured }
+                    every { fakeUserRepository.getUserById(moderator.id!!) } answers { moderator }
+                    every { fakeCommunityRepository.insertModerator(community.id, moderator.id!!) } just Runs
                     every { fakeCommunityRepository.fetchCommunity(community.id) } answers { community }
 
                     handleRequest(HttpMethod.Post, "/communities/${community.id}/moderators") {
@@ -453,7 +457,26 @@ object CommunityRouteTest: Spek({
                         setBody(Json.encodeToString(moderator))
                     }.apply {
                         response.status() shouldBe HttpStatusCode.OK
-                        verify { fakeCommunityRepository.insertModerator(community.id, moderator) }
+                        verify { fakeCommunityRepository.insertModerator(community.id, moderator.id!!) }
+                    }
+                }
+            }
+
+            it("should delete a moderator of a community if requester is admin") {
+                withTestApplication ({ setup(this) }) {
+                    val admin = generateUser("Admin")
+                    val moderator = generateUser("Ada")
+                    val community = generateCommunity("Kotlin", admin = admin.id!!)
+                    every { fakeTokenValidator.checkAuth(any()) } answers { admin.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(community.id) } answers { community }
+                    every { fakeUserRepository.getUserById(moderator.id!!) } answers { moderator }
+
+                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/moderators/${moderator.id}") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(moderator))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.OK
+                        verify { fakeCommunityRepository.deleteModerator(community.id, moderator.id!!) }
                     }
                 }
             }
@@ -466,10 +489,7 @@ object CommunityRouteTest: Spek({
 
                     val loggedUser = generateUser("Not admin")
                     every { fakeTokenValidator.checkAuth(any()) } answers { loggedUser.id!! }
-
-                    val userSlot = slot<User>()
                     every { fakeCommunityRepository.fetchCommunity(community.id) } answers { community }
-                    every { fakeCommunityRepository.insertModerator(community.id, capture(userSlot)) } answers { userSlot.captured }
 
                     handleRequest(HttpMethod.Post, "/communities/${community.id}/moderators") {
                         addHeader("Content-Type", "application/json")

@@ -18,5 +18,6 @@ data class Community(
     val photo_url: String? = null,
     val type: CommunityType? = null,
     val contacts: List<Contact>,
-    val tags: List<Tag> = emptyList()
+    val tags: List<Tag> = emptyList(),
+    val moderators: List<User> = emptyList(),
 )

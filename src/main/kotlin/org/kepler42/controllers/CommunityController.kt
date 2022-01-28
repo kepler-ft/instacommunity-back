@@ -18,7 +18,8 @@ interface CommunityRepository {
     fun fetchCommunitiesFollowedByUser(userId: String): List<Community>?
     fun checkAlreadyFollows(userId: String, communityId: Int): Boolean
     fun fetchModerators(communityId: Int): List<User>?
-    fun insertModerator(communityId: Int, moderator: User): User
+    fun insertModerator(communityId: Int, userId: String)
+    fun deleteModerator(communityId: Int, moderatorId: String)
 }
 
 class CommunityController(private val communityRepository: CommunityRepository) {

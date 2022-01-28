@@ -122,17 +122,17 @@ class CommunityRepositoryImpl: CommunityRepository {
         }
     }
 
-    override fun insertModerator(communityId: Int, moderator: User): User {
+    override fun insertModerator(communityId: Int, userId: String) {
         return transaction {
-            val moderatorEntity = UserEntity.findById(moderator.id!!) ?: throw ResourceNotFoundException("User not found")
-            val community = CommunityEntity.findById(communityId) ?: throw ResourceNotFoundException("Community not found")
-            if (community.moderators.contains(moderatorEntity)) throw AlreadyRelatedException("This user already moderates this community")
             CommunitiesModeratorsTable.insert {
-                it[user_id] = moderator.id
-                it[community_id] = community.id
+                it[user_id] = userId
+                it[community_id] = communityId
             }
-            moderatorEntity.toModel()
         }
+    }
+
+    override fun deleteModerator(communityId: Int, moderatorId: String) {
+        TODO("Not yet implemented")
     }
 
     override fun fetchFollowers(id: Int): List<User>? {
