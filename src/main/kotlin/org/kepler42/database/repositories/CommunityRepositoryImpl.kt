@@ -114,8 +114,10 @@ class CommunityRepositoryImpl: CommunityRepository {
         }
     }
 
-    override fun fetchModerators(communityId: Int): List<User> {
-        TODO("Not yet implemented")
+    override fun fetchModerators(communityId: Int): List<User>? {
+        return transaction {
+            CommunityEntity.findById(communityId)?.moderators?.map { it.toModel() }
+        }
     }
 
     override fun fetchFollowers(id: Int): List<User>? {

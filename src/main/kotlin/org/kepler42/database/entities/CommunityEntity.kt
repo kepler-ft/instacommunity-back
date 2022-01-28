@@ -24,6 +24,7 @@ class CommunityEntity(id: EntityID<Int>) : Entity<Int>(id) {
     var name by CommunitiesTable.name
     var description by CommunitiesTable.description
     var followers by UserEntity via UsersCommunities
+    var moderators by UserEntity via CommunitiesModeratorsTable
     var admin by CommunitiesTable.ademiro
     var photo_url by CommunitiesTable.photo_url
     var type by CommunitiesTable.type
