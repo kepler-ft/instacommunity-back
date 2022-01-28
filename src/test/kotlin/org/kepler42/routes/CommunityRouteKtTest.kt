@@ -500,6 +500,27 @@ object CommunityRouteTest: Spek({
                 }
             }
 
+            it("should not add the same moderator twice") {
+                withTestApplication ({ setup(this) }) {
+                    val moderator = generateUser("Ada")
+                    val admin = generateUser("Admin")
+                    val community = generateCommunity("Kotlin", admin = admin.id!!)
+
+                    every { fakeTokenValidator.checkAuth(any()) } answers { admin.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(community.id) } answers { community }
+                    every { fakeCommunityRepository.fetchModerators(community.id) } answers { listOf(moderator) }
+                    every { fakeUserRepository.getUserById(moderator.id!!) } answers { moderator }
+
+                    handleRequest(HttpMethod.Post, "/communities/${community.id}/moderators") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(moderator))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.BadRequest
+                        verify(inverse = true) { fakeCommunityRepository.insertModerator(any(), any()) }
+                    }
+                }
+            }
+
             it("should not be able to remove a moderator if not admin") {
                 withTestApplication ({ setup(this) }) {
                     val actualAdmin = generateUser("Admin")

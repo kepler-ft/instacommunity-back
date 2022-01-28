@@ -7,6 +7,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.kepler42.controllers.CommunityRepository
 import org.kepler42.database.repositories.UserRepository
+import org.kepler42.errors.AlreadyRelatedException
 import org.kepler42.errors.InvalidBodyException
 import org.kepler42.errors.OperationNotPermittedException
 import org.kepler42.errors.ResourceNotFoundException
@@ -45,8 +46,11 @@ fun Route.moderatorsRoutes() {
                     ?: throw ResourceNotFoundException("Community not found")
                 if (community.admin != requesterId)
                     throw OperationNotPermittedException("Can't change moderators if not admin")
+                val moderators = communityRepository.fetchModerators(community.id) ?: emptyList()
                 val moderator = userRepository.getUserById(user.id)
                     ?: throw ResourceNotFoundException("User not found")
+                if (moderators.contains(moderator))
+                    throw AlreadyRelatedException("This user already moderates this community")
                 val result = communityRepository.insertModerator(communityId.toInt(), moderator.id!!)
                 call.respond(result)
             } catch (e: Exception) {
