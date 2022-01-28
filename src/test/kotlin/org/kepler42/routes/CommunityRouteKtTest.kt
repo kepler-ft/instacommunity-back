@@ -437,6 +437,25 @@ object CommunityRouteTest: Spek({
                     }
                 }
             }
+
+            it("should add a moderator to a community if requester is admin") {
+                withTestApplication ({ setup(this) }) {
+                    val community = generateCommunity("Kotlin")
+                    val moderator = generateUser("Ada")
+                    val admin = generateUser("Admin")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { admin.id!! }
+                    val userSlot = slot<User>()
+                    every { fakeCommunityRepository.insertModerator(community.id, capture(userSlot)) } answers { userSlot.captured }
+
+                    handleRequest(HttpMethod.Post, "/communities/${community.id}/moderators") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(moderator))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.OK
+                        verify { fakeCommunityRepository.insertModerator(community.id, moderator) }
+                    }
+                }
+            }
         }
     }
 })
