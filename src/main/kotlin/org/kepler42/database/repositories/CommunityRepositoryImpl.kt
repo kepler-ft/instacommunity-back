@@ -7,6 +7,8 @@ import org.jetbrains.exposed.dao.id.EntityID
 
 import org.kepler42.models.*
 import org.kepler42.database.entities.*
+import org.kepler42.errors.AlreadyRelatedException
+import org.kepler42.errors.ResourceNotFoundException
 
 class ILikeOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "ILIKE")
 
@@ -117,6 +119,19 @@ class CommunityRepositoryImpl: CommunityRepository {
     override fun fetchModerators(communityId: Int): List<User>? {
         return transaction {
             CommunityEntity.findById(communityId)?.moderators?.map { it.toModel() }
+        }
+    }
+
+    override fun insertModerator(communityId: Int, moderator: User): User? {
+        return transaction {
+            val moderatorEntity = UserEntity.findById(moderator.id!!) ?: throw ResourceNotFoundException("User not found")
+            val community = CommunityEntity.findById(communityId) ?: throw ResourceNotFoundException("Community not found")
+            if (community.moderators.contains(moderatorEntity)) throw AlreadyRelatedException("This user already moderates this community")
+            CommunitiesModeratorsTable.insert {
+                it[user_id] = moderator.id
+                it[community_id] = community.id
+            }
+            moderatorEntity.toModel()
         }
     }
 
