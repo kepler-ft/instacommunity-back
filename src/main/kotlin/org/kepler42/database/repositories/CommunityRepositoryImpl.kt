@@ -114,6 +114,10 @@ class CommunityRepositoryImpl: CommunityRepository {
         }
     }
 
+    override fun fetchModerators(communityId: Int): List<User> {
+        TODO("Not yet implemented")
+    }
+
     override fun fetchFollowers(id: Int): List<User>? {
         val followers = transaction {
             addLogger(StdOutSqlLogger)

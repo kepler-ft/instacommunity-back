@@ -12,6 +12,7 @@ import org.kepler42.controllers.*
 fun Application.configureRouting() {
     routing {
         communityRoute()
+        moderatorsRoutes()
         userRoute()
         tagRoute()
     }
