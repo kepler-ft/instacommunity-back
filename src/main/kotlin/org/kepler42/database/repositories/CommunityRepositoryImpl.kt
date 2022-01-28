@@ -122,7 +122,7 @@ class CommunityRepositoryImpl: CommunityRepository {
         }
     }
 
-    override fun insertModerator(communityId: Int, moderator: User): User? {
+    override fun insertModerator(communityId: Int, moderator: User): User {
         return transaction {
             val moderatorEntity = UserEntity.findById(moderator.id!!) ?: throw ResourceNotFoundException("User not found")
             val community = CommunityEntity.findById(communityId) ?: throw ResourceNotFoundException("Community not found")
