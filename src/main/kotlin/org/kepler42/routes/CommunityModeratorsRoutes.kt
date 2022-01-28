@@ -9,6 +9,7 @@ import org.kepler42.controllers.CommunityRepository
 import org.kepler42.errors.InvalidBodyException
 import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.models.User
+import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
 
 fun Route.moderatorsRoutes() {
@@ -16,16 +17,25 @@ fun Route.moderatorsRoutes() {
 
     route("/communities/{communityId}/moderators") {
         get {
-            val communityId = call.parameters["communityId"] ?: throw ResourceNotFoundException()
-            val moderators = communityRepository.fetchModerators(communityId.toInt()) ?: throw ResourceNotFoundException()
-            call.respond(moderators)
+            try {
+                val communityId = call.parameters["communityId"] ?: throw ResourceNotFoundException()
+                val moderators =
+                    communityRepository.fetchModerators(communityId.toInt()) ?: throw ResourceNotFoundException()
+                call.respond(moderators)
+            } catch (e: Exception) {
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
+            }
         }
 
         post {
-            val user = call.receive<User>()
-            val communityId = call.parameters["communityId"] ?: throw ResourceNotFoundException()
-            communityRepository.insertModerator(communityId.toInt(), user)
-            call.respond(user)
+            try {
+                val user = call.receive<User>()
+                val communityId = call.parameters["communityId"] ?: throw ResourceNotFoundException()
+                communityRepository.insertModerator(communityId.toInt(), user)
+                call.respond(user)
+            } catch (e: Exception) {
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
+            }
         }
     }
 }
