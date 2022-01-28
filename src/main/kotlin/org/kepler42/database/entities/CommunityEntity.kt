@@ -39,7 +39,7 @@ class CommunityEntity(id: EntityID<Int>) : Entity<Int>(id) {
             description = this.description,
             admin = this.admin.value,
             contacts = this.contacts.map { it.toModel() },
-            photo_url = this.photo_url,
+            photoURL = this.photo_url,
             slug = this.slug,
             type = this.type)
     }

@@ -22,9 +22,13 @@ fun Route.communityRoute() {
             val communityNameToFind =  call.request.queryParameters["name"]
             val desiredPage = call.request.queryParameters["page"] ?: "1"
             val tagString = call.request.queryParameters["tags"] // "4,2,3"
+            val communitySlug = call.parameters["slug"]
             try {
-                val communities = if ( communityNameToFind.isNullOrEmpty() && tagString.isNullOrEmpty() )
+                val communities = if ( communityNameToFind.isNullOrEmpty() && tagString.isNullOrEmpty() && communitySlug.isNullOrEmpty())
                     communityController.getAll(desiredPage.toLong())
+                else if (!communitySlug.isNullOrEmpty()){
+                    communityController.getBySlug(communitySlug)
+                }
                 else {
                     val tagList = tagString?.split(",")?.map { it.toInt() }
                     communityController.search(communityNameToFind, tagList)

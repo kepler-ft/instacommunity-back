@@ -107,6 +107,18 @@ object CommunityRouteTest: Spek({
             }
         }
 
+        it("should get community by slug") {
+            withTestApplication ({ setup(this) }) {
+                val community = generateCommunity("Python", 1)
+                every { fakeCommunityRepository.fetchCommunityBySlug(slug = "python")} answers { community }
+                handleRequest(HttpMethod.Get, "/communities?slug=${"python"}").apply {
+                    response.status() shouldBe HttpStatusCode.OK
+                    val communityResult = Json.decodeFromString<Community>(response.content!!)
+                    communityResult shouldBe community
+                }
+            }
+        }
+
         it("Should patch properties of a Community by its ID") {
             withTestApplication({ setup(this) }) {
                 val ada = generateUser("ada")
@@ -522,7 +534,7 @@ object CommunityRouteTest: Spek({
             }
 
             it("should not be able to remove a moderator if not admin") {
-                withTestApplication ({ setup(this) }) {
+                withTestApplication({ setup(this) }) {
                     val actualAdmin = generateUser("Admin")
                     val moderator = generateUser("Ada")
                     val community = generateCommunity("Kotlin", admin = actualAdmin.id!!)
