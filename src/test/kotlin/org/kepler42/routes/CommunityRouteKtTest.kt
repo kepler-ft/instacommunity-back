@@ -104,59 +104,6 @@ object CommunityRouteTest: Spek({
             }
         }
 
-        it("by posting a follower into a community, it should check the called functions") {
-            withTestApplication({
-                setup(this)
-            }) {
-                val ada = generateUser("Ada")
-                every { fakeCommunityRepository.insertFollower(any(), any())} answers { nothing }
-                every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
-                every { fakeCommunityRepository.checkAlreadyFollows(any(), 1)} answers { false }
-
-                handleRequest(HttpMethod.Post, "/communities/1/followers") {
-                    addHeader("Content-Type", "application/json")
-                    setBody(Json.encodeToString(ada))
-                }.apply {
-                    response.content shouldNotBe null
-                    response.status() shouldBe HttpStatusCode.OK
-                }
-                verify(exactly = 1) { fakeCommunityRepository.insertFollower(ada.id!!, 1)}
-            }
-        }
-        it("by deleting a follower from a community, it should check the called functions") {
-            withTestApplication({
-                setup(this)
-            }) {
-                val community = generateCommunity("Kotlin")
-                val follower = generateUser("Ada")
-                every { fakeTokenValidator.checkAuth(any()) } answers { follower.id!! }
-                every { fakeCommunityRepository.deleteFollower(any(), any()) } answers  { nothing }
-                handleRequest(HttpMethod.Delete, "/communities/${community.id}/followers/${follower.id}") {
-                    addHeader("Content-Type", "application/json")
-                }.apply {
-                    response.content shouldBe null
-                    response.status() shouldBe HttpStatusCode.OK
-                }
-                verify { fakeCommunityRepository.deleteFollower( community.id, follower.id!!)}
-            }
-        }
-
-        it("should get all followers from community") {
-            withTestApplication({ setup(this) }){
-                val community = generateCommunity("kotlin")
-                val userList = getAllUsers()
-                every { fakeCommunityRepository.fetchFollowers(community.id) } answers { userList }
-                handleRequest(HttpMethod.Get, "/communities/${community.id}/followers") {
-                    addHeader("Content-Type", "application/json")
-                }.apply {
-                    response.content shouldNotBe null
-                    response.status() shouldBe HttpStatusCode.OK
-                    val followers = Json.decodeFromString<List<User>>(response.content!!)
-                    followers shouldBe userList
-                }
-            }
-        }
-
         it("Should patch properties of a Community by its ID") {
             withTestApplication({ setup(this) }) {
                 val ada = generateUser("ada")
@@ -210,37 +157,6 @@ object CommunityRouteTest: Spek({
                 verify { fakeCommunityRepository wasNot Called }
             }
         }
-        it("should return 401 if user tries to follow a community if not authenticated") {
-            withTestApplication({ setup(this) }) {
-                val community = generateCommunity("Kotlin", admin = "1")
-                every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
-
-                handleRequest(HttpMethod.Post, "/communities/${community.id}/followers") {
-                    addHeader("Content-Type", "application/json")
-                    setBody(Json.encodeToString(community))
-                }.apply {
-                    response.status() shouldBe HttpStatusCode.Unauthorized
-                }
-                verify { fakeCommunityRepository wasNot Called}
-            }
-        }
-
-        it("should return 401 if user tries to unfollow a community if not authenticated") {
-            withTestApplication({ setup(this) }) {
-                val user = generateUser("Fausto")
-                val community = generateCommunity("Kotlin", admin = user.id!!)
-                every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
-
-                handleRequest(HttpMethod.Delete, "/communities/${community.id}/followers/${user.id}") {
-                    addHeader("Content-Type", "application/json")
-                    setBody(Json.encodeToString(community))
-                }.apply {
-                    response.status() shouldBe HttpStatusCode.Unauthorized
-                    verify { fakeCommunityRepository wasNot Called }
-                }
-            }
-        }
-
         it("should return 401 if user tries to update a community if not authenticated") {
             withTestApplication({ setup(this) }) {
                 val ada = generateUser("Ada")
@@ -342,76 +258,166 @@ object CommunityRouteTest: Spek({
                 }
             }
         }
-        it("should filter a community list by an specific tag") {
-            withTestApplication ({ setup(this) }) {
-                val communityList = listOf(
-                    generateCommunity("Kotlin", 1),
-                    generateCommunity("Java", 1)
-                )
-                val filterTags = listOf(1)
-                val tagString = filterTags.joinToString(",")
-                every { fakeCommunityRepository.search(name = null, tags = filterTags) } answers { communityList }
-                handleRequest(HttpMethod.Get, "/communities?tags=${tagString}") {
-                }.apply {
-                    response.status() shouldBe HttpStatusCode.OK
-                    val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
-                    communityListResult shouldBe communityList
+        describe("followers route") {
+            it("by posting a follower into a community, it should check the called functions") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    every { fakeCommunityRepository.insertFollower(any(), any())} answers { nothing }
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.checkAlreadyFollows(any(), 1)} answers { false }
+
+                    handleRequest(HttpMethod.Post, "/communities/1/followers") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(ada))
+                    }.apply {
+                        response.content shouldNotBe null
+                        response.status() shouldBe HttpStatusCode.OK
+                    }
+                    verify(exactly = 1) { fakeCommunityRepository.insertFollower(ada.id!!, 1)}
                 }
             }
+            it("by deleting a follower from a community, it should check the called functions") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val community = generateCommunity("Kotlin")
+                    val follower = generateUser("Ada")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { follower.id!! }
+                    every { fakeCommunityRepository.deleteFollower(any(), any()) } answers  { nothing }
+                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/followers/${follower.id}") {
+                        addHeader("Content-Type", "application/json")
+                    }.apply {
+                        response.content shouldBe null
+                        response.status() shouldBe HttpStatusCode.OK
+                    }
+                    verify { fakeCommunityRepository.deleteFollower( community.id, follower.id!!)}
+                }
+            }
+
+            it("should get all followers from community") {
+                withTestApplication({ setup(this) }){
+                    val community = generateCommunity("kotlin")
+                    val userList = getAllUsers()
+                    every { fakeCommunityRepository.fetchFollowers(community.id) } answers { userList }
+                    handleRequest(HttpMethod.Get, "/communities/${community.id}/followers") {
+                        addHeader("Content-Type", "application/json")
+                    }.apply {
+                        response.content shouldNotBe null
+                        response.status() shouldBe HttpStatusCode.OK
+                        val followers = Json.decodeFromString<List<User>>(response.content!!)
+                        followers shouldBe userList
+                    }
+                }
+            }
+
+            it("should return 401 if user tries to follow a community if not authenticated") {
+                withTestApplication({ setup(this) }) {
+                    val community = generateCommunity("Kotlin", admin = "1")
+                    every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
+
+                    handleRequest(HttpMethod.Post, "/communities/${community.id}/followers") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(community))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.Unauthorized
+                    }
+                    verify { fakeCommunityRepository wasNot Called}
+                }
+            }
+
+            it("should return 401 if user tries to unfollow a community if not authenticated") {
+                withTestApplication({ setup(this) }) {
+                    val user = generateUser("Fausto")
+                    val community = generateCommunity("Kotlin", admin = user.id!!)
+                    every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
+
+                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/followers/${user.id}") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(community))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.Unauthorized
+                        verify { fakeCommunityRepository wasNot Called }
+                    }
+                }
+            }
+
 
         }
 
-        it("should filter a community list by name and an specific tag") {
-            withTestApplication ({ setup(this) }) {
-                val filterTags = listOf(1)
-                val name = "Java"
-                val expectedList = listOf(
-                    generateCommunity("Java", 1),
-                    generateCommunity("Javascript", 1),
-                    generateCommunity("Javascript", 1),
-                )
-                every { fakeCommunityRepository.search(name = name, tags = filterTags) } answers { expectedList }
-                val tagString = filterTags.joinToString(",")
-                handleRequest(HttpMethod.Get, "/communities?tags=${tagString}&name=${name}").apply {
-                    response.status() shouldBe HttpStatusCode.OK
-                    val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
-                    communityListResult shouldBe expectedList
+        describe("tags route") {
+            it("should filter a community list by an specific tag") {
+                withTestApplication ({ setup(this) }) {
+                    val communityList = listOf(
+                        generateCommunity("Kotlin", 1),
+                        generateCommunity("Java", 1)
+                    )
+                    val filterTags = listOf(1)
+                    val tagString = filterTags.joinToString(",")
+                    every { fakeCommunityRepository.search(name = null, tags = filterTags) } answers { communityList }
+                    handleRequest(HttpMethod.Get, "/communities?tags=${tagString}") {
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.OK
+                        val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
+                        communityListResult shouldBe communityList
+                    }
                 }
+
             }
 
-        }
-
-        it("should filter a community list from multiple tags") {
-            withTestApplication ({ setup(this) }) {
-                val filterTags = listOf(1, 3)
-                val expectedList = listOf(
-                    generateCommunity("Java", 1),
-                    generateCommunity("Javascript", 1),
-                    generateCommunity("DotaJava", 3),
-                )
-                every { fakeCommunityRepository.search(name = null, tags = filterTags) } answers { expectedList }
-                val tagString = filterTags.joinToString(",")
-                handleRequest(HttpMethod.Get, "/communities?tags=${tagString}").apply {
-                    response.status() shouldBe HttpStatusCode.OK
-                    val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
-                    communityListResult shouldBe expectedList
+            it("should filter a community list by name and an specific tag") {
+                withTestApplication ({ setup(this) }) {
+                    val filterTags = listOf(1)
+                    val name = "Java"
+                    val expectedList = listOf(
+                        generateCommunity("Java", 1),
+                        generateCommunity("Javascript", 1),
+                        generateCommunity("Javascript", 1),
+                    )
+                    every { fakeCommunityRepository.search(name = name, tags = filterTags) } answers { expectedList }
+                    val tagString = filterTags.joinToString(",")
+                    handleRequest(HttpMethod.Get, "/communities?tags=${tagString}&name=${name}").apply {
+                        response.status() shouldBe HttpStatusCode.OK
+                        val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
+                        communityListResult shouldBe expectedList
+                    }
                 }
+
             }
 
-        }
-        it("should return an empty list if searching a community name that doesnt exist even with tags") {
-            withTestApplication ({ setup(this) }) {
-                val filterTags = listOf(1, 3)
-                val name = "Non Java"
-                every { fakeCommunityRepository.search(name = name, tags = filterTags) } answers { emptyList() }
-                val tagString = filterTags.joinToString(",")
-                handleRequest(HttpMethod.Get, "/communities?tags=${tagString}").apply {
-                    response.status() shouldBe HttpStatusCode.OK
-                    val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
-                    communityListResult shouldBe emptyList()
+            it("should filter a community list from multiple tags") {
+                withTestApplication ({ setup(this) }) {
+                    val filterTags = listOf(1, 3)
+                    val expectedList = listOf(
+                        generateCommunity("Java", 1),
+                        generateCommunity("Javascript", 1),
+                        generateCommunity("DotaJava", 3),
+                    )
+                    every { fakeCommunityRepository.search(name = null, tags = filterTags) } answers { expectedList }
+                    val tagString = filterTags.joinToString(",")
+                    handleRequest(HttpMethod.Get, "/communities?tags=${tagString}").apply {
+                        response.status() shouldBe HttpStatusCode.OK
+                        val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
+                        communityListResult shouldBe expectedList
+                    }
                 }
+
             }
 
+            it("should return an empty list if searching a community name that doesnt exist even with tags") {
+                withTestApplication ({ setup(this) }) {
+                    val filterTags = listOf(1, 3)
+                    val name = "Non Java"
+                    every { fakeCommunityRepository.search(name = name, tags = filterTags) } answers { emptyList() }
+                    val tagString = filterTags.joinToString(",")
+                    handleRequest(HttpMethod.Get, "/communities?tags=${tagString}").apply {
+                        response.status() shouldBe HttpStatusCode.OK
+                        val communityListResult = Json.decodeFromString<List<Community>>(response.content!!)
+                        communityListResult shouldBe emptyList()
+                    }
+                }
+            }
         }
     }
 })
