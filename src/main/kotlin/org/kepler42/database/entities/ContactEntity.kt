@@ -17,7 +17,7 @@ class ContactEntity(id: EntityID<Int>): Entity<Int>(id) {
 
     var title by ContactsTable.title
     var link by ContactsTable.link
-    var community by CommunityEntity referencedOn ContactsTable.community
+    var community by ContactsTable.community
 
     fun toModel(): Contact {
         return Contact(

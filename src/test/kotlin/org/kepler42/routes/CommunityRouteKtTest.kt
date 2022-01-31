@@ -553,5 +553,325 @@ object CommunityRouteTest: Spek({
                 }
             }
         }
+
+        describe("contacts route") {
+            it("should return 401 when creating a contact if user isn't authenticated") {
+                withTestApplication({ setup(this) }) {
+                    val community = generateCommunity("Kotlin", admin = "1")
+                    every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
+
+                    handleRequest(HttpMethod.Post, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(community.contacts))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.Unauthorized
+                    }
+                    verify { fakeCommunityRepository wasNot Called }
+                }
+            }
+
+            it("should return 401 when creating a contact if user isn't community admin") {
+                withTestApplication({ setup(this) }) {
+                    val ada = generateUser("Ada")
+                    val community = generateCommunity("kotlin")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
+
+                    handleRequest(HttpMethod.Post, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(community.contacts))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.Unauthorized
+                    }
+                    verify(inverse = true) { fakeCommunityRepository.insertContacts(any(), any()) }
+                }
+            }
+
+            it("should not create a contact if the community does not exist") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    val community = generateCommunity("kotlin", ada.id!!, CommunityType.OPEN)
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+
+                    handleRequest(HttpMethod.Post, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(community.contacts))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.NotFound
+                    }
+                    verify(inverse = true) { fakeCommunityRepository.insertContacts(community.contacts, community.id) }
+                }
+            }
+
+            it("should not create a contact if the title does not exist") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    val community = Community(
+                        name = "Kotlin",
+                        description = "kotlin",
+                        admin = ada.id!!,
+                        slug = "kotlin",
+                        photoURL = "troll",
+                        type = CommunityType.OPEN,
+                        contacts = listOf(
+                            Contact(1, "a", "a"),
+                        )
+                    )
+                    val contacts = listOf(
+                        Contact(5, "a", "a"),
+                        Contact(6, "", "b"),
+                    )
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
+
+                    handleRequest(HttpMethod.Post, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contacts))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.BadRequest
+                    }
+                    verify(inverse = true) { fakeCommunityRepository.insertContacts(any(), any()) }
+                }
+            }
+
+            it("should not create a contact if there are already 3 contacts") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    val community = Community(
+                        name = "Kotlin",
+                        description = "kotlin",
+                        admin = ada.id!!,
+                        type = CommunityType.OPEN,
+                        contacts = listOf(
+                            Contact(1, "a", "a"),
+                            Contact(2, "b", "b"),
+                            Contact(5, "c", "c"),
+                        )
+                    )
+                    val contacts = listOf(
+                        Contact(6, "aa", "b"),
+                    )
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
+
+                    handleRequest(HttpMethod.Post, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contacts))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.BadRequest
+                    }
+                    verify(inverse = true) { fakeCommunityRepository.insertContacts(community.contacts, community.id) }
+                }
+            }
+
+            it("by posting a contact into a community, it should check the called functions") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    val community = Community(
+                        name = "Kotlin",
+                        description = "kotlin",
+                        admin = ada.id!!,
+                        type = CommunityType.OPEN,
+                        contacts = listOf(
+                            Contact(1, "a", "a"),
+                            Contact(5, "a", "a"),
+                        )
+                    )
+                    val contacts = listOf(
+                        Contact(6, "k", "b"),
+                    )
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
+                    every { fakeCommunityRepository.insertContacts(any(), any()) } answers { contacts }
+
+                    handleRequest(HttpMethod.Post, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contacts))
+                    }.apply {
+                        response.content shouldNotBe null
+                        response.status() shouldBe HttpStatusCode.OK
+                        val results = Json.decodeFromString<List<Contact>>(response.content!!)
+                        results shouldBe contacts
+                    }
+                    verify(exactly = 1) { fakeCommunityRepository.insertContacts(any(), any()) }
+                }
+            }
+
+            it("should return 401 when updating a contact if user isn't authenticated") {
+                withTestApplication({ setup(this) }) {
+                    val contact = Contact(1, "lol", "a")
+                    every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
+
+                    handleRequest(HttpMethod.Patch, "/communities/0/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contact))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.Unauthorized
+                    }
+                    verify { fakeCommunityRepository wasNot Called }
+                }
+            }
+
+            it("should return 401 when updating a contact if user isn't community admin") {
+                withTestApplication({ setup(this) }) {
+                    val ada = generateUser("Ada")
+                    val community = generateCommunity("kotlin")
+                    val contact = Contact(1, "discord", "a")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
+
+                    handleRequest(HttpMethod.Patch, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contact))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.Unauthorized
+                    }
+                    verify(inverse = true) { fakeCommunityRepository.updateContact(any(), any()) }
+                }
+            }
+
+            it("should not update a contact if the community does not exist") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    val contact = Contact(1, "a", "a")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+
+                    handleRequest(HttpMethod.Patch, "/communities/1/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contact))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.NotFound
+                    }
+                    verify(inverse = true) { fakeCommunityRepository.updateContact(any(), any()) }
+                }
+            }
+
+            it("should not update a contact if the title does not exist") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    val community = generateCommunity("Kotlin", ada.id!!, CommunityType.OPEN)
+                    val contact = Contact(5, "", "a")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
+
+                    handleRequest(HttpMethod.Patch, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contact))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.BadRequest
+                    }
+                    verify(inverse = true) { fakeCommunityRepository.updateContact(any(), any()) }
+                }
+            }
+
+            it("Should patch properties of a Contact by its ID") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    val community = generateCommunity("Kotlin", ada.id!!, CommunityType.OPEN)
+                    val contact = Contact(6, "k", "b")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
+                    every { fakeCommunityRepository.updateContact(any(), any()) } answers { contact }
+
+                    handleRequest(HttpMethod.Patch, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contact))
+                    }.apply {
+                        response.content shouldNotBe null
+                        response.status() shouldBe HttpStatusCode.OK
+                        val results = Json.decodeFromString<Contact>(response.content!!)
+                        results shouldBe contact
+                    }
+                    verify(exactly = 1) { fakeCommunityRepository.updateContact(any(), any()) }
+                }
+            }
+
+            it("should return 401 when deleting a contact if user isn't authenticated") {
+                withTestApplication({ setup(this) }) {
+                    val contact = Contact(1, "discord", "a")
+                    every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
+
+                    handleRequest(HttpMethod.Delete, "/communities/1/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contact))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.Unauthorized
+                    }
+                    verify { fakeCommunityRepository wasNot Called }
+                }
+            }
+
+            it("should return 401 when deleting a contact if user isn't community admin") {
+                withTestApplication({ setup(this) }) {
+                    val ada = generateUser("Ada")
+                    val community = generateCommunity("kotlin")
+                    val contact = Contact(1, "discord", "a")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
+
+                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contact))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.Unauthorized
+                    }
+                    verify(inverse = true) { fakeCommunityRepository.deleteContact(any(), any()) }
+                }
+            }
+
+            it("should not delete a contact if the community does not exist") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    val contact = Contact(1, "a", "a")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+
+                    handleRequest(HttpMethod.Delete, "/communities/1/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contact))
+                    }.apply {
+                        response.status() shouldBe HttpStatusCode.NotFound
+                    }
+                    verify(inverse = true) { fakeCommunityRepository.deleteContact(any(), any()) }
+                }
+            }
+
+            it("by deleting a contact from a community, it should check the functions called") {
+                withTestApplication({
+                    setup(this)
+                }) {
+                    val ada = generateUser("Ada")
+                    val community = generateCommunity("Kotlin", ada.id!!, CommunityType.OPEN)
+                    val contact = Contact(6, "k", "b")
+                    every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
+                    every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
+                    every { fakeCommunityRepository.deleteContact(any(), any()) } answers { contact }
+
+                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/contacts") {
+                        addHeader("Content-Type", "application/json")
+                        setBody(Json.encodeToString(contact))
+                    }.apply {
+                        response.content shouldBe null
+                        response.status() shouldBe HttpStatusCode.OK
+                    }
+                    verify(exactly = 1) { fakeCommunityRepository.deleteContact(any(), any()) }
+                }
+            }
+        }
     }
 })

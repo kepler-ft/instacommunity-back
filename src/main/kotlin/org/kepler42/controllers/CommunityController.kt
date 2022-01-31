@@ -21,6 +21,9 @@ interface CommunityRepository {
     fun fetchModerators(communityId: Int): List<User>?
     fun insertModerator(communityId: Int, userId: String)
     fun deleteModerator(communityId: Int, moderatorId: String)
+    fun insertContacts(contacts: List<Contact>, communityId: Int): List<Contact>
+    fun updateContact(contact: Contact, communityId: Int): Contact?
+    fun deleteContact(contact: Contact, communityId: Int): Contact?
 }
 
 class CommunityController(private val communityRepository: CommunityRepository) {
@@ -87,5 +90,34 @@ class CommunityController(private val communityRepository: CommunityRepository) 
         }
 
         return createdCommunity
+    }
+
+    fun addContacts(contacts: List<Contact>, communityId: Int, userId: String): List<Contact> {
+        val community = communityRepository.fetchCommunity(communityId) ?: throw ResourceNotFoundException("Community not found")
+        if (community.admin != userId)
+            throw UnauthorizedException()
+        if (community.contacts.size + contacts.size > 3)
+            throw InvalidBodyException("A community can't have more than 3 contacts")
+        for (contact in contacts) {
+            if (contact.title.isNullOrEmpty())
+                throw InvalidBodyException("A contact must have a title")
+        }
+        return communityRepository.insertContacts(contacts, community.id)
+    }
+
+    fun updateContact(contact: Contact, communityId: Int, userId: String): Contact {
+        val community = communityRepository.fetchCommunity(communityId) ?: throw ResourceNotFoundException("Community not found")
+        if (community.admin != userId)
+            throw UnauthorizedException()
+        if (contact.title.isNullOrEmpty())
+            throw InvalidBodyException("A contact must have a title")
+        return communityRepository.updateContact(contact, community.id) ?: throw ResourceNotFoundException("Contact not found")
+    }
+
+    fun removeContact(contact: Contact, communityId: Int, userId: String) {
+        val community = communityRepository.fetchCommunity(communityId) ?: throw ResourceNotFoundException("Community not found")
+        if (community.admin != userId)
+            throw UnauthorizedException()
+        communityRepository.deleteContact(contact, community.id) ?: throw ResourceNotFoundException("Contact not found")
     }
 }
