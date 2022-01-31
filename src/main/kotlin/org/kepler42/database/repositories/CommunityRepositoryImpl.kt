@@ -7,6 +7,7 @@ import org.jetbrains.exposed.dao.id.EntityID
 
 import org.kepler42.models.*
 import org.kepler42.database.entities.*
+import org.kepler42.errors.InvalidBodyException
 
 class ILikeOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "ILIKE")
 
@@ -30,9 +31,9 @@ class CommunityRepositoryImpl: CommunityRepository {
         val community = transaction {
             addLogger(StdOutSqlLogger)
             CommunityEntity
-                .find { CommunitiesTable.slug ilike "%$slug%" }
+                .find { CommunitiesTable.slug eq slug }
                 .map { it.toModel() }
-                .first()
+                .firstOrNull()
             }
             return community
         }
@@ -72,13 +73,24 @@ class CommunityRepositoryImpl: CommunityRepository {
     override fun insertCommunity(community: Community): Community {
         val newCommunity = transaction {
             addLogger(StdOutSqlLogger)
+
+            val desiredSlug = community.slug ?: throw InvalidBodyException("Missing slug")
+            val existingSlug = CommunityEntity.find { CommunitiesTable.slug eq desiredSlug }.map { it.slug }.firstOrNull()
+            val slugToInsert = if (existingSlug != null)
+                desiredSlug
+            else
+                ""
+
             val createdCommunity = CommunityEntity.new {
                 name = community.name!!
                 description = community.description!!
                 admin = EntityID(community.admin!!, UsersTable)
-                slug = community.slug!!
+                slug = slugToInsert
                 type = community.type!!
                 photo_url = community.photoURL!!
+            }
+            if (slugToInsert == "") {
+                createdCommunity.slug = desiredSlug + createdCommunity.id
             }
             for (contact in community.contacts) {
                 ContactEntity.new {
