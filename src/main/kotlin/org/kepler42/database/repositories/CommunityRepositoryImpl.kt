@@ -137,6 +137,25 @@ class CommunityRepositoryImpl: CommunityRepository {
         }
     }
 
+    override fun fetchModerators(communityId: Int): List<User>? {
+        return transaction {
+            CommunityEntity.findById(communityId)?.moderators?.map { it.toModel() }
+        }
+    }
+
+    override fun insertModerator(communityId: Int, userId: String) {
+        return transaction {
+            CommunitiesModeratorsTable.insert {
+                it[user_id] = userId
+                it[community_id] = communityId
+            }
+        }
+    }
+
+    override fun deleteModerator(communityId: Int, moderatorId: String) {
+        TODO("Not yet implemented")
+    }
+
     override fun fetchFollowers(id: Int): List<User>? {
         val followers = transaction {
             addLogger(StdOutSqlLogger)

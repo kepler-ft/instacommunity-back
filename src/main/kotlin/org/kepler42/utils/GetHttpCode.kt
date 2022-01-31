@@ -13,6 +13,7 @@ private val values = mapOf(
     InvalidBodyException::class to 400,
     UnauthorizedException::class to 401,
     FirebaseAuthException:: class to 401,
+    OperationNotPermittedException::class to 403,
     InvalidNameException::class to 406,
     ResourceNotFoundException::class to 404,
     AlreadyExistsException::class to 409,
