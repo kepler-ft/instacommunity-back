@@ -42,7 +42,7 @@ class CommunityRepositoryImpl: CommunityRepository {
         val communities = transaction {
             addLogger(StdOutSqlLogger)
             CommunityEntity
-                .find { CommunitiesTable.name ilike "%$name%" }
+                .find { CommunitiesTable.name insensitiveLike "%$name%" }
                 .orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC)
                 .map { it.toModel() }
         }
@@ -119,7 +119,7 @@ class CommunityRepositoryImpl: CommunityRepository {
             addLogger(StdOutSqlLogger)
             val communityExists =
                 CommunityEntity.find {
-                    (CommunitiesTable.name ilike communityName)
+                    (CommunitiesTable.name insensitiveLike communityName)
                 }
             communityExists.any()
         }
