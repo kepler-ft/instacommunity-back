@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Contact(
     val id: Int? = 0,
-    val title: String?,
-    val link: String?
+    val title: String? = null,
+    val link: String? = null
 ) {
 }

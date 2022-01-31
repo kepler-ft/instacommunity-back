@@ -4,6 +4,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.*
 import org.kepler42.controllers.CommunityRepository
 import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 import org.kepler42.models.*
 import org.kepler42.database.entities.*
@@ -67,7 +68,7 @@ class CommunityRepositoryImpl: CommunityRepository {
             }
             for (contact in community.contacts) {
                 ContactEntity.new {
-                    this.community = createdCommunity
+                    this.community = createdCommunity.id
                     this.title = contact.title!!
                     this.link = contact.link
                 }
@@ -135,7 +136,44 @@ class CommunityRepositoryImpl: CommunityRepository {
             community.description?.let { oldCommunity.description = community.description }
             community.admin?.let { oldCommunity.admin = EntityID(community.admin, UsersTable) }
             community.photo_url?.let { oldCommunity.photo_url = community.photo_url }
+            for (contact in community.contacts) {
+                contact.title?.let {  oldCommunity.contacts.find { it.id.value == contact.id }?.title = contact.title }
+                contact.link?.let { oldCommunity.contacts.find { it.id.value == contact.id }?.link = contact.link }
+            }
             oldCommunity.toModel()
+        }
+    }
+
+    override fun insertContacts(contacts: List<Contact>, communityId: Int): List<Contact> {
+       val newContacts = transaction {
+           addLogger(StdOutSqlLogger)
+           contacts.map { contact ->
+               ContactEntity.new {
+                   this.title = contact.title!!
+                   this.link = contact.link
+                   this.community = EntityID(communityId, CommunitiesTable)
+               }.toModel()
+           }
+       }
+       return newContacts
+    }
+
+    override fun updateContact(contact: Contact, communityId: Int): Contact? {
+        return transaction {
+            addLogger(StdOutSqlLogger)
+            val oldContact = ContactEntity.findById(contact.id!!) ?: return@transaction null
+            contact.title?.let { oldContact.title = contact.title }
+            contact.link?.let { oldContact.link = contact.link }
+            oldContact.toModel()
+        }
+    }
+
+    override fun deleteContact(contact: Contact, communityId: Int): Contact? {
+        return transaction {
+            addLogger(StdOutSqlLogger)
+            val oldContact = ContactEntity.findById(contact.id!!) ?: return@transaction null
+            oldContact.delete()
+            oldContact.toModel()
         }
     }
 }

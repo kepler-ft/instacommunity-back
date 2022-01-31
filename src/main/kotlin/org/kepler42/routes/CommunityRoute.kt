@@ -5,6 +5,8 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.utils.io.*
+import org.jetbrains.exposed.sql.idParam
 import org.kepler42.controllers.*
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.*
@@ -22,7 +24,7 @@ fun Route.communityRoute() {
             val desiredPage = call.request.queryParameters["page"]
             try {
                 val communities = if (communityNameToFind.isNullOrEmpty())
-                    communityController.getAll()
+                    communityController.getAll(desiredPage?.toLong() ?: 1)
                 else
                     communityController.searchByName(communityNameToFind)
                 call.respond(communities)
@@ -104,6 +106,48 @@ fun Route.communityRoute() {
                 val createdCommunity = communityController.createCommunity(community)
                 call.respond(createdCommunity)
             } catch (e: Exception) {
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
+            }
+        }
+
+        post("{communityId}/contacts") {
+            try {
+                val userId = validator.checkAuth(call)
+                val contacts = call.receive<List<Contact>>()
+                val communityId = call.parameters["communityId"]
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "missing community id")
+                val response = communityController.addContacts(contacts, communityId.toInt(), userId)
+                call.respond(response)
+            }
+            catch (e: Exception) {
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
+            }
+        }
+
+        patch("{communityId}/contacts") {
+            try {
+                val userId = validator.checkAuth(call)
+                val contact = call.receive<Contact>()
+                val communityId = call.parameters["communityId"]
+                    ?: return@patch call.respond(HttpStatusCode.BadRequest, "missing community id")
+                val response = communityController.updateContact(contact, communityId.toInt(), userId)
+                call.respond(response)
+            }
+            catch (e: Exception) {
+                call.respond(getHttpCode(e), mapOf("error" to e.message))
+            }
+        }
+
+        delete("{communityId}/contacts") {
+            try {
+                val userId = validator.checkAuth(call)
+                val contact = call.receive<Contact>()
+                val communityId = call.parameters["communityId"]
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, "missing community id")
+                communityController.removeContact(contact, communityId.toInt(), userId)
+                call.respond(HttpStatusCode.OK)
+            }
+            catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
         }
