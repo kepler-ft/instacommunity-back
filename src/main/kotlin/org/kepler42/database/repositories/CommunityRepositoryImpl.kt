@@ -8,15 +8,28 @@ import org.jetbrains.exposed.dao.id.EntityID
 import org.kepler42.models.*
 import org.kepler42.database.entities.*
 import org.kepler42.errors.InvalidBodyException
-
-class ILikeOp(expr1: Expression<*>, expr2: Expression<*>) : ComparisonOp(expr1, expr2, "ILIKE")
-
-infix fun <T : String?> ExpressionWithColumnType<T>.ilike(pattern: String): Op<Boolean> =
-        ILikeOp(this, QueryParameter(pattern, columnType))
+import org.kepler42.database.repositories.utils.*
 
 class CommunityRepositoryImpl: CommunityRepository {
     override fun search(name: String?, tags: List<Int>?): List<Community>? {
-        TODO("Not yet implemented")
+        return transaction {
+            addLogger(StdOutSqlLogger)
+            val fields = CommunitiesTable.leftJoin(CommunitiesTagsTable)
+                .slice(CommunitiesTable.columns)
+            val query = if (name == null && tags == null)
+                fields.selectAll().orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC)
+            else
+                fields.select {
+                    if (tags == null)
+                        CommunitiesTable.name insensitiveLike "%$name%"
+                    else if (name == null)
+                        TagsTable.id inList tags
+                    else
+                        CommunitiesTable.name insensitiveLike "%$name%" and (TagsTable.id inList tags)
+                }
+                    .orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC)
+            CommunityEntity.wrapRows(query).map { it.toModel() }
+        }
     }
 
     override fun fetchCommunity(id: Int): Community? {
@@ -55,7 +68,7 @@ class CommunityRepositoryImpl: CommunityRepository {
             addLogger(StdOutSqlLogger)
             CommunityEntity
                 .all()
-                .orderBy(CommunitiesTable.name.lowerCase() to SortOrder.ASC)
+                .orderBy(CommunitiesTable.id to SortOrder.DESC)
                 .limit(pageSize, pageSize * (page - 1))
                 .toList().map { it.toModel() }
         }
