@@ -76,7 +76,7 @@ class CommunityRepositoryImpl: CommunityRepository {
 
             val desiredSlug = community.slug ?: throw InvalidBodyException("Missing slug")
             val existingSlug = CommunityEntity.find { CommunitiesTable.slug eq desiredSlug }.map { it.slug }.firstOrNull()
-            val slugToInsert = if (existingSlug != null)
+            val slugToInsert = if (existingSlug == null)
                 desiredSlug
             else
                 ""
