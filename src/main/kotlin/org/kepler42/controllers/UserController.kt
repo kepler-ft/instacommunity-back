@@ -60,4 +60,7 @@ class UserController(private val userRepository: UserRepository, private val com
         return userRepository.getByUsername(username) ?: throw ResourceNotFoundException()
     }
 
+    fun getUsersByName(searchTerm: String): List<User> {
+        return userRepository.getUsersByName(searchTerm) ?: emptyList()
+    }
 }

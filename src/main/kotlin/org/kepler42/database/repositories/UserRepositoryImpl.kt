@@ -7,13 +7,14 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.kepler42.database.entities.UsersTable
 import org.kepler42.errors.InvalidBodyException
-import org.kepler42.errors.ResourceNotFoundException
+import org.kepler42.database.repositories.utils.*
 
 interface UserRepository {
     fun getUserById(id: String): User?
     fun insertUser(user: User): User
     fun changeUser(user: User): User?
     fun getByUsername(username: String): User?
+    fun getUsersByName(searchTerm: String): List<User>?
 }
 
 class UserRepositoryImpl: UserRepository {
@@ -67,5 +68,13 @@ class UserRepositoryImpl: UserRepository {
             UserEntity.find(UsersTable.username eq username).firstOrNull()
         }
         return user?.toModel()
+    }
+
+    override fun getUsersByName(searchTerm: String): List<User>? {
+        val usersList = transaction {
+            addLogger(StdOutSqlLogger)
+            UserEntity.find(UsersTable.username insensitiveLike "%$searchTerm%").map { it.toModel() }
+        }
+        return usersList
     }
 }
