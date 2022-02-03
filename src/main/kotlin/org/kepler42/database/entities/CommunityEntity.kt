@@ -6,6 +6,7 @@ import org.jetbrains.exposed.dao.id.IntIdTable
 import org.kepler42.database.entities.CommunityEntity.Companion.backReferencedOn
 import org.kepler42.database.entities.ContactEntity.Companion.backReferencedOn
 import org.kepler42.models.*
+import org.jetbrains.exposed.sql.SortOrder
 
 // Object is the representation of communities table
 object CommunitiesTable : IntIdTable("communities") {
@@ -38,7 +39,9 @@ class CommunityEntity(id: EntityID<Int>) : Entity<Int>(id) {
             name = this.name,
             description = this.description,
             admin = this.admin.value,
-            contacts = this.contacts.map { it.toModel() },
+            contacts = this.contacts
+                .orderBy(ContactsTable.id to SortOrder.ASC)
+                .map { it.toModel() },
             photoURL = this.photo_url,
             slug = this.slug,
             type = this.type)
