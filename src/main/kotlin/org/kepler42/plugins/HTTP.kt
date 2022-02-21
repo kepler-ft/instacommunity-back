@@ -8,6 +8,7 @@ import io.ktor.response.*
 
 fun Application.configureHTTP() {
     install(CORS) {
+        method(HttpMethod.Get)
         method(HttpMethod.Options)
         method(HttpMethod.Put)
         method(HttpMethod.Delete)

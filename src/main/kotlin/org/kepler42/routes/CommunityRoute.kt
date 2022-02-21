@@ -132,7 +132,7 @@ fun Route.communityRoute() {
             }
         }
 
-        patch("{communityId}/contacts") {
+        patch("{communityId}/contacts/{contactId}") {
             try {
                 val userId = validator.checkAuth(call)
                 val contact = call.receive<Contact>()
@@ -146,7 +146,7 @@ fun Route.communityRoute() {
             }
         }
 
-        delete("{communityId}/contacts") {
+        delete("{communityId}/contacts/{contactId}") {
             try {
                 val userId = validator.checkAuth(call)
                 val contact = call.receive<Contact>()

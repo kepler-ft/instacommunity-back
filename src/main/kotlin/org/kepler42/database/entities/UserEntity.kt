@@ -14,7 +14,7 @@ object UsersTable : IdTable<String>("users") {
     val occupation = varchar("occupation", 200)
     val about = varchar("about", 200).nullable()
     val email = varchar("email", 200)
-    val photoURL = varchar("photo_url",200).nullable()
+    val photoURL = varchar("photo_url",500).nullable()
     val contact_title = varchar("contact_title",200).nullable()
     val contact_link = varchar("contact_link",200).nullable()
 }
