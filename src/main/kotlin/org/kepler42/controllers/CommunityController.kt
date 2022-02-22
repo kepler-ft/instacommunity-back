@@ -44,12 +44,6 @@ class CommunityController(private val communityRepository: CommunityRepository) 
         return communityRepository.search(name, tagId) ?: emptyList()
     }
 
-    fun getAll(desiredPage: Long): List<Community> {
-        val page = if (desiredPage > 0) desiredPage
-                   else 1
-        return communityRepository.fetchAllCommunities(page)
-    }
-
     fun addFollower(userId: String, communityId: Int) {
         val alreadyFollows = communityRepository.checkAlreadyFollows(userId, communityId)
         if (alreadyFollows) throw AlreadyRelatedException("This user already follows this community")

@@ -17,6 +17,7 @@ import org.koin.ktor.ext.inject
 
 fun Route.communityRoute() {
     val communityController: CommunityController by inject()
+    val communityRepository: CommunityRepository by inject()
     val validator: TokenValidator by inject()
 
     route("/communities") {
@@ -26,16 +27,20 @@ fun Route.communityRoute() {
             val tagString = call.request.queryParameters["tags"] // "4,2,3"
             val communitySlug = call.parameters["slug"]
             try {
-                val communities = if ( communityNameToFind.isNullOrEmpty() && tagString.isNullOrEmpty() && communitySlug.isNullOrEmpty())
-                    communityController.getAll(desiredPage.toLong())
-                else if (!communitySlug.isNullOrEmpty()){
-                    communityController.getBySlug(communitySlug)
-                }
-                else {
+                if ( communityNameToFind.isNullOrEmpty() && tagString.isNullOrEmpty() && communitySlug.isNullOrEmpty()) {
+                    val page = if (desiredPage.toInt() > 0) desiredPage.toLong() else 1
+                    val communities = communityRepository.fetchAllCommunities(page)
+                    call.respond(communities)
+
+                } else if (!communitySlug.isNullOrEmpty()){
+                    val community = communityController.getBySlug(communitySlug)
+                    call.respond(community)
+
+                } else {
                     val tagList = tagString?.split(",")?.map { it.toInt() }
-                    communityController.search(communityNameToFind, tagList)
+                    val communities = communityController.search(communityNameToFind, tagList)
+                    call.respond(communities)
                 }
-                call.respond(communities)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e))
             }
