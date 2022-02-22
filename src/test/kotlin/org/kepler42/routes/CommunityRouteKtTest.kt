@@ -710,7 +710,7 @@ object CommunityRouteTest: Spek({
                     val contact = Contact(1, "lol", "a")
                     every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
 
-                    handleRequest(HttpMethod.Patch, "/communities/0/contacts") {
+                    handleRequest(HttpMethod.Patch, "/communities/0/contacts/${contact.id}") {
                         addHeader("Content-Type", "application/json")
                         setBody(Json.encodeToString(contact))
                     }.apply {
@@ -728,7 +728,7 @@ object CommunityRouteTest: Spek({
                     every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
                     every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
 
-                    handleRequest(HttpMethod.Patch, "/communities/${community.id}/contacts") {
+                    handleRequest(HttpMethod.Patch, "/communities/${community.id}/contacts/${contact.id}") {
                         addHeader("Content-Type", "application/json")
                         setBody(Json.encodeToString(contact))
                     }.apply {
@@ -746,7 +746,7 @@ object CommunityRouteTest: Spek({
                     val contact = Contact(1, "a", "a")
                     every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
 
-                    handleRequest(HttpMethod.Patch, "/communities/1/contacts") {
+                    handleRequest(HttpMethod.Patch, "/communities/1/contacts/${contact.id}") {
                         addHeader("Content-Type", "application/json")
                         setBody(Json.encodeToString(contact))
                     }.apply {
@@ -766,7 +766,7 @@ object CommunityRouteTest: Spek({
                     every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
                     every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
 
-                    handleRequest(HttpMethod.Patch, "/communities/${community.id}/contacts") {
+                    handleRequest(HttpMethod.Patch, "/communities/${community.id}/contacts/${contact.id}") {
                         addHeader("Content-Type", "application/json")
                         setBody(Json.encodeToString(contact))
                     }.apply {
@@ -787,7 +787,7 @@ object CommunityRouteTest: Spek({
                     every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
                     every { fakeCommunityRepository.updateContact(any(), any()) } answers { contact }
 
-                    handleRequest(HttpMethod.Patch, "/communities/${community.id}/contacts") {
+                    handleRequest(HttpMethod.Patch, "/communities/${community.id}/contacts/${contact.id}") {
                         addHeader("Content-Type", "application/json")
                         setBody(Json.encodeToString(contact))
                     }.apply {
@@ -805,7 +805,7 @@ object CommunityRouteTest: Spek({
                     val contact = Contact(1, "discord", "a")
                     every { fakeTokenValidator.checkAuth(any()) } throws UnauthorizedException()
 
-                    handleRequest(HttpMethod.Delete, "/communities/1/contacts") {
+                    handleRequest(HttpMethod.Delete, "/communities/1/contacts/${contact.id}") {
                         addHeader("Content-Type", "application/json")
                         setBody(Json.encodeToString(contact))
                     }.apply {
@@ -823,7 +823,7 @@ object CommunityRouteTest: Spek({
                     every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
                     every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
 
-                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/contacts") {
+                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/contacts/${contact.id}") {
                         addHeader("Content-Type", "application/json")
                         setBody(Json.encodeToString(contact))
                     }.apply {
@@ -841,7 +841,7 @@ object CommunityRouteTest: Spek({
                     val contact = Contact(1, "a", "a")
                     every { fakeTokenValidator.checkAuth(any()) } answers { ada.id!! }
 
-                    handleRequest(HttpMethod.Delete, "/communities/1/contacts") {
+                    handleRequest(HttpMethod.Delete, "/communities/1/contacts/${contact.id}") {
                         addHeader("Content-Type", "application/json")
                         setBody(Json.encodeToString(contact))
                     }.apply {
@@ -862,7 +862,7 @@ object CommunityRouteTest: Spek({
                     every { fakeCommunityRepository.fetchCommunity(any()) } answers { community }
                     every { fakeCommunityRepository.deleteContact(any(), any()) } answers { contact }
 
-                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/contacts") {
+                    handleRequest(HttpMethod.Delete, "/communities/${community.id}/contacts/${contact.id}") {
                         addHeader("Content-Type", "application/json")
                         setBody(Json.encodeToString(contact))
                     }.apply {
