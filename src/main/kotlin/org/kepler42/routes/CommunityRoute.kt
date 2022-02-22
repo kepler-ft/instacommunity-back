@@ -9,6 +9,7 @@ import io.ktor.utils.io.*
 import org.jetbrains.exposed.sql.idParam
 import org.kepler42.controllers.*
 import org.kepler42.database.repositories.CommunityRepositoryImpl
+import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.*
 import org.kepler42.utils.TokenValidator
@@ -50,7 +51,8 @@ fun Route.communityRoute() {
             val communityId = call.parameters["id"]
                 ?: return@get call.respond(HttpStatusCode.BadRequest, "missing community id")
             try{
-                val community = communityController.getById(communityId.toInt())
+                val community = communityRepository.fetchCommunity(communityId.toInt())
+                    ?: throw ResourceNotFoundException("Community Not Found")
                 call.respond(community)
             } catch(e: Exception) {
                 call.respond(getHttpCode(e))
