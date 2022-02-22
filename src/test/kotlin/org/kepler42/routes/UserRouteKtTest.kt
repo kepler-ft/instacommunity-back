@@ -14,7 +14,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.kepler42.controllers.UserController
 import org.kepler42.database.repositories.CommunityRepository
 import org.kepler42.database.repositories.UserRepository
 import org.kepler42.models.Community
@@ -71,7 +70,8 @@ object UserRouteTest : Spek({
 
     val testKoinModule = module {
         single { fakeTokenValidator }
-        single { UserController(fakeUserRepository, fakeCommunityRepository) }
+        single { fakeUserRepository }
+        single { fakeCommunityRepository }
     }
 
     describe("User route") {

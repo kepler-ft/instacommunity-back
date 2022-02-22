@@ -6,16 +6,29 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.kepler42.controllers.UserController
+import org.kepler42.database.repositories.CommunityRepository
+import org.kepler42.database.repositories.UserRepository
+import org.kepler42.errors.AlreadyExistsException
+import org.kepler42.errors.InvalidNameException
+import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.User
 import org.kepler42.utils.TokenValidator
 import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
+import java.lang.IllegalArgumentException
 
+private fun invalidName(name: String?) =
+    when {
+        (name == null) -> true
+        (name.length < 2) -> true
+        (name.length > 200) -> true
+        else -> false
+    }
 
 fun Route.userRoute() {
-    val userController: UserController by inject()
+    val userRepository: UserRepository by inject()
+    val communityRepository: CommunityRepository by inject()
     val validator: TokenValidator by inject()
 
     route("/users") {
@@ -23,7 +36,10 @@ fun Route.userRoute() {
             try {
                 val username = call.request.queryParameters["username"]
                 if (username != null)
-                    call.respond(userController.getByUsername(username))
+                {
+                    val user = userRepository.getByUsername(username) ?: throw ResourceNotFoundException()
+                    call.respond(user)
+                }
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
@@ -31,7 +47,8 @@ fun Route.userRoute() {
         get("{id}") {
             val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing id"))
             try {
-                call.respond(userController.getById(id))
+                val user = userRepository.getUserById(id) ?: throw ResourceNotFoundException()
+                call.respond(user)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
@@ -42,7 +59,18 @@ fun Route.userRoute() {
                 val id = validator.checkAuth(call)
                 val user = call.receive<User>()
                 if (id == user.id)
-                    call.respond(userController.createUser(user))
+                {
+                    if (invalidName(user.name))
+                        throw InvalidNameException()
+                    if (user.username == null)
+                        throw IllegalArgumentException("username cannot be null")
+                    val existingUser = userRepository.getByUsername(user.username)
+                    if (existingUser != null)
+                        throw AlreadyExistsException("this username was already taken")
+
+                    val createdUser = userRepository.insertUser(user)
+                    call.respond(createdUser)
+                }
                 else
                     throw UnauthorizedException()
             } catch (e: Exception) {
@@ -57,7 +85,11 @@ fun Route.userRoute() {
                 if (authId != id)
                     throw UnauthorizedException("Can't change other users info")
                 val user = call.receive<User>()
-                call.respond(userController.updateUser(user))
+                if (invalidName(user.name))
+                    throw InvalidNameException()
+
+                val updatedUser = userRepository.changeUser(user) ?: throw ResourceNotFoundException()
+                call.respond(updatedUser)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }
@@ -66,7 +98,8 @@ fun Route.userRoute() {
         get("{id}/communities") {
             val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid id.")
             try {
-                call.respond(userController.getFollowedCommunities(id))
+                val communities = communityRepository.fetchCommunitiesFollowedByUser(id) ?: emptyList()
+                call.respond(communities)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
             }

@@ -3,7 +3,6 @@ package org.kepler42.utils
 import com.google.firebase.auth.FirebaseAuthException
 import io.ktor.http.*
 import kotlinx.serialization.SerializationException
-import org.kepler42.controllers.UnknownErrorException
 import org.kepler42.errors.*
 
 private val values = mapOf(
