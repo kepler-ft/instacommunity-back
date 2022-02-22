@@ -7,7 +7,6 @@ import io.mockk.*
 import io.ktor.server.testing.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.kepler42.controllers.TagController
 import org.kepler42.database.repositories.TagRepository
 import org.kepler42.plugins.configureRouting
 import org.kepler42.plugins.configureSerialization
@@ -27,7 +26,7 @@ object TagsRouteTest : Spek({
     fun setup(app: Application) {
 
         val testKoinModule = module {
-            single {TagController(fakeTagRepository) }
+            single { fakeTagRepository }
         }
         app.install(Koin) {
             modules(testKoinModule)

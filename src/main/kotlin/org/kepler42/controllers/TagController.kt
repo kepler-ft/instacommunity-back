@@ -5,8 +5,3 @@ import org.kepler42.database.repositories.TagRepository
 import org.kepler42.database.entities.TagEntity
 
 
-class TagController(private val tagRepository: TagRepository) {
-    fun getAll(): List<Tag> {
-        return tagRepository.getAll()
-    }
-}
