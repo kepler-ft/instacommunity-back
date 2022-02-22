@@ -39,27 +39,6 @@ class CommunityController(private val communityRepository: CommunityRepository) 
         return communityRepository.search(name, tagId) ?: emptyList()
     }
 
-    fun addFollower(userId: String, communityId: Int) {
-        val alreadyFollows = communityRepository.checkAlreadyFollows(userId, communityId)
-        if (alreadyFollows) throw AlreadyRelatedException("This user already follows this community")
-
-        communityRepository.insertFollower(userId, communityId)
-    }
-
-    fun removeFollower(communityId: Int, userId: String) {
-        communityRepository.deleteFollower(communityId, userId)
-    }
-
-    fun getCommunityFollowers(communityId: Int) =
-            communityRepository.fetchFollowers(communityId)
-
-    fun updateCommunity(userId: String, id: Int, community: Community): Community {
-        val comm = communityRepository.fetchCommunity(id) ?: throw ResourceNotFoundException()
-        if (comm.admin != userId)
-            throw UnauthorizedException()
-        return communityRepository.updateCommunity(id, community) ?: throw ResourceNotFoundException("Community not found")
-    }
-
     fun createCommunity(community: Community): Community {
         if (community.name == null || !nameIsValid(community.name))
             throw InvalidNameException()

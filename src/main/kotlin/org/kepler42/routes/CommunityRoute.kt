@@ -6,9 +6,8 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.utils.io.*
-import org.jetbrains.exposed.sql.idParam
 import org.kepler42.controllers.*
-import org.kepler42.database.repositories.CommunityRepositoryImpl
+import org.kepler42.errors.AlreadyRelatedException
 import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.*
@@ -61,10 +60,15 @@ fun Route.communityRoute() {
 
         post("{id}/followers") {
             try {
-                val communityId = call.parameters["id"]
+                val communityIdStr = call.parameters["id"]
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "missing community id")
                 val userId = validator.checkAuth(call)
-                val response = communityController.addFollower(userId, communityId.toInt())
+                val communityId = communityIdStr.toInt()
+
+                val alreadyFollows = communityRepository.checkAlreadyFollows(userId, communityId)
+                if (alreadyFollows) throw AlreadyRelatedException("This user already follows this community")
+
+                val response = communityRepository.insertFollower(userId, communityId)
                 call.respond(response)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
@@ -80,7 +84,7 @@ fun Route.communityRoute() {
                     ?: return@delete call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing user id"))
                 if (followerId != userId)
                     throw UnauthorizedException("You can't make other users do what you want")
-                communityController.removeFollower(communityId.toInt(), followerId)
+                communityRepository.deleteFollower(communityId.toInt(), userId)
                 call.respond(HttpStatusCode.OK)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
@@ -91,7 +95,7 @@ fun Route.communityRoute() {
             val communityId = call.parameters["id"]
                 ?: return@get call.respond(HttpStatusCode. BadRequest, "missing community id")
             try {
-                val followers = communityController.getCommunityFollowers(communityId.toInt())
+                val followers = communityRepository.fetchFollowers(communityId.toInt())
                 call.respond(followers ?: emptyList())
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
@@ -102,9 +106,15 @@ fun Route.communityRoute() {
             try {
                 val userId = validator.checkAuth(call)
                 val community = call.receive<Community>()
-                val communityId = call.parameters["id"]
+                val communityIdStr = call.parameters["id"]
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, "missing community id")
-                val updatedCommunity = communityController.updateCommunity(userId, communityId.toInt(), community)
+
+                val communityId = communityIdStr.toInt()
+                val comm = communityRepository.fetchCommunity(communityId) ?: throw ResourceNotFoundException()
+                if (comm.admin != userId)
+                    throw UnauthorizedException()
+                val updatedCommunity =
+                    communityRepository.updateCommunity(communityId, community) ?: throw ResourceNotFoundException("Community not found")
                 call.respond(updatedCommunity)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
