@@ -5,11 +5,8 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.mockk.*
 import io.ktor.server.testing.*
-import io.ktor.util.Identity.decode
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.kepler42.controllers.CommunityController
 import org.kepler42.controllers.TagController
 import org.kepler42.database.repositories.TagRepository
 import org.kepler42.plugins.configureRouting

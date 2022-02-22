@@ -12,7 +12,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.kepler42.controllers.CommunityController
 import org.kepler42.database.repositories.CommunityRepository
 import org.kepler42.database.repositories.UserRepository
 import org.kepler42.errors.UnauthorizedException
@@ -37,7 +36,6 @@ object CommunityRouteTest: Spek({
             single { fakeCommunityRepository }
             single { fakeUserRepository }
             single { fakeTokenValidator }
-            single { CommunityController(get()) }
         }
         app.install(Koin) {
             modules(testKoinModule)
