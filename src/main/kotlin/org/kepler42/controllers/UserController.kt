@@ -1,6 +1,7 @@
 package org.kepler42.controllers
 
 import org.jetbrains.exposed.exceptions.ExposedSQLException
+import org.kepler42.database.repositories.CommunityRepository
 import org.kepler42.database.repositories.UserRepository
 import org.kepler42.errors.AlreadyExistsException
 import org.kepler42.errors.InvalidNameException

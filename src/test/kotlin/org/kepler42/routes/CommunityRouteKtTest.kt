@@ -11,9 +11,9 @@ import org.kepler42.testUtils.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import org.kepler42.controllers.CommunityRepository
 import kotlinx.serialization.json.Json
 import org.kepler42.controllers.CommunityController
+import org.kepler42.database.repositories.CommunityRepository
 import org.kepler42.database.repositories.UserRepository
 import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.*

@@ -7,6 +7,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.utils.io.*
 import org.kepler42.controllers.*
+import org.kepler42.database.repositories.CommunityRepository
 import org.kepler42.errors.*
 import org.kepler42.models.*
 import org.kepler42.utils.TokenValidator
@@ -17,7 +18,6 @@ private fun nameIsValid(name: String) =
     if (name.isEmpty()) false else name.length < 200
 
 fun Route.communityRoute() {
-    val communityController: CommunityController by inject()
     val communityRepository: CommunityRepository by inject()
     val validator: TokenValidator by inject()
 
@@ -34,12 +34,14 @@ fun Route.communityRoute() {
                     call.respond(communities)
 
                 } else if (!communitySlug.isNullOrEmpty()){
-                    val community = communityController.getBySlug(communitySlug)
+                    val community = communityRepository.fetchCommunityBySlug(communitySlug)
+                        ?: throw ResourceNotFoundException("There's no community with this slug")
                     call.respond(community)
 
                 } else {
                     val tagList = tagString?.split(",")?.map { it.toInt() }
-                    val communities = communityController.search(communityNameToFind, tagList)
+                    val communities = communityRepository.search(communityNameToFind, tagList)
+                        ?: emptyList()
                     call.respond(communities)
                 }
             } catch (e: Exception) {
@@ -156,7 +158,16 @@ fun Route.communityRoute() {
                 val contacts = call.receive<List<Contact>>()
                 val communityId = call.parameters["communityId"]
                     ?: return@post call.respond(HttpStatusCode.BadRequest, "missing community id")
-                val response = communityController.addContacts(contacts, communityId.toInt(), userId)
+                val community = communityRepository.fetchCommunity(communityId.toInt()) ?: throw ResourceNotFoundException("Community not found")
+                if (community.admin != userId)
+                    throw UnauthorizedException()
+                if (community.contacts.size + contacts.size > 3)
+                    throw InvalidBodyException("A community can't have more than 3 contacts")
+                for (contact in contacts) {
+                    if (contact.title.isNullOrEmpty())
+                        throw InvalidBodyException("A contact must have a title")
+                }
+                val response = communityRepository.insertContacts(contacts, community.id)
                 call.respond(response)
             }
             catch (e: Exception) {
@@ -170,7 +181,13 @@ fun Route.communityRoute() {
                 val contact = call.receive<Contact>()
                 val communityId = call.parameters["communityId"]
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, "missing community id")
-                val response = communityController.updateContact(contact, communityId.toInt(), userId)
+                val community = communityRepository.fetchCommunity(communityId.toInt()) ?: throw ResourceNotFoundException("Community not found")
+                if (community.admin != userId)
+                    throw UnauthorizedException()
+                if (contact.title.isNullOrEmpty())
+                    throw InvalidBodyException("A contact must have a title")
+                val response = communityRepository.updateContact(contact, community.id) ?: throw ResourceNotFoundException("Contact not found")
+
                 call.respond(response)
             }
             catch (e: Exception) {
@@ -184,7 +201,10 @@ fun Route.communityRoute() {
                 val contact = call.receive<Contact>()
                 val communityId = call.parameters["communityId"]
                     ?: return@delete call.respond(HttpStatusCode.BadRequest, "missing community id")
-                communityController.removeContact(contact, communityId.toInt(), userId)
+                val community = communityRepository.fetchCommunity(communityId.toInt()) ?: throw ResourceNotFoundException("Community not found")
+                if (community.admin != userId)
+                    throw UnauthorizedException()
+                communityRepository.deleteContact(contact, community.id) ?: throw ResourceNotFoundException("Contact not found")
                 call.respond(HttpStatusCode.OK)
             }
             catch (e: Exception) {

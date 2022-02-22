@@ -2,7 +2,6 @@ package org.kepler42.database.repositories
 
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.*
-import org.kepler42.controllers.CommunityRepository
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
@@ -10,6 +9,28 @@ import org.kepler42.models.*
 import org.kepler42.database.entities.*
 import org.kepler42.errors.InvalidBodyException
 import org.kepler42.database.repositories.utils.*
+
+interface CommunityRepository {
+    fun search(name: String? = null,  tags: List<Int>? = null): List<Community>?
+    fun fetchCommunity(id: Int): Community?
+    fun fetchCommunityBySlug(slug: String): Community?
+    fun fetchCommunitiesByName(name: String): List<Community>?
+    fun insertCommunity(community: Community): Community
+    fun insertFollower(userId: String, communityId: Int)
+    fun deleteFollower(communityId: Int, userId: String)
+    fun alreadyExists(communityName: String): Boolean
+    fun fetchFollowers(id: Int): List<User>?
+    fun updateCommunity(id: Int, community: Community): Community?
+    fun fetchAllCommunities(page: Long): List<Community>
+    fun fetchCommunitiesFollowedByUser(userId: String): List<Community>?
+    fun checkAlreadyFollows(userId: String, communityId: Int): Boolean
+    fun fetchModerators(communityId: Int): List<User>?
+    fun insertModerator(communityId: Int, userId: String)
+    fun deleteModerator(communityId: Int, moderatorId: String)
+    fun insertContacts(contacts: List<Contact>, communityId: Int): List<Contact>
+    fun updateContact(contact: Contact, communityId: Int): Contact?
+    fun deleteContact(contact: Contact, communityId: Int): Contact?
+}
 
 class CommunityRepositoryImpl: CommunityRepository {
     override fun search(name: String?, tags: List<Int>?): List<Community>? {

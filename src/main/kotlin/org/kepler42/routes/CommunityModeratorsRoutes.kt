@@ -5,7 +5,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.kepler42.controllers.CommunityRepository
+import org.kepler42.database.repositories.CommunityRepository
 import org.kepler42.database.repositories.UserRepository
 import org.kepler42.errors.AlreadyRelatedException
 import org.kepler42.errors.InvalidBodyException
