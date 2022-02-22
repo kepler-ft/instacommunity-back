@@ -7,13 +7,14 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.utils.io.*
 import org.kepler42.controllers.*
-import org.kepler42.errors.AlreadyRelatedException
-import org.kepler42.errors.ResourceNotFoundException
-import org.kepler42.errors.UnauthorizedException
+import org.kepler42.errors.*
 import org.kepler42.models.*
 import org.kepler42.utils.TokenValidator
 import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
+
+private fun nameIsValid(name: String) =
+    if (name.isEmpty()) false else name.length < 200
 
 fun Route.communityRoute() {
     val communityController: CommunityController by inject()
@@ -128,7 +129,21 @@ fun Route.communityRoute() {
                 val community = call.receive<Community>()
                 if (id != community.admin)
                     throw UnauthorizedException("Can't create community in the name of another user")
-                val createdCommunity = communityController.createCommunity(community)
+                if (community.name == null || !nameIsValid(community.name))
+                    throw InvalidNameException()
+
+                if (community.contacts.isEmpty())
+                    throw InvalidBodyException("A community needs at least one contact")
+
+                if (community.contacts.size > 3)
+                    throw InvalidBodyException("A community can't have more than 3 contacts")
+
+                if (communityRepository.alreadyExists(community.name))
+                    throw AlreadyExistsException("A community with this name already exists")
+
+                val createdCommunity = communityRepository.insertCommunity(community)
+                communityRepository.insertFollower(community.admin, createdCommunity.id)
+
                 call.respond(createdCommunity)
             } catch (e: Exception) {
                 call.respond(getHttpCode(e), mapOf("error" to e.message))
