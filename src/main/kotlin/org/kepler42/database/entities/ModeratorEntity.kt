@@ -1,7 +1,5 @@
 package org.kepler42.database.entities
 
-import org.jetbrains.exposed.dao.Entity
-import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 
 object CommunitiesModeratorsTable: IntIdTable("communities_moderators") {

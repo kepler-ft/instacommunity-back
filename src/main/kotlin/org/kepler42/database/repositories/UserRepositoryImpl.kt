@@ -1,13 +1,15 @@
 package org.kepler42.database.repositories
 
-import org.kepler42.models.User
-import org.kepler42.database.entities.UserEntity
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.kepler42.database.entities.UserEntity
 import org.kepler42.database.entities.UsersTable
+import org.kepler42.database.repositories.utils.insensitiveLike
 import org.kepler42.errors.InvalidBodyException
-import org.kepler42.database.repositories.utils.*
+import org.kepler42.models.User
 
 interface UserRepository {
     fun getUserById(id: String): User?

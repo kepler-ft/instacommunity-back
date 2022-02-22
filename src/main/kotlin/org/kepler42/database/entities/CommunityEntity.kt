@@ -1,12 +1,12 @@
 package org.kepler42.database.entities
 
-import org.jetbrains.exposed.dao.*
+import org.jetbrains.exposed.dao.Entity
+import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.kepler42.database.entities.CommunityEntity.Companion.backReferencedOn
-import org.kepler42.database.entities.ContactEntity.Companion.backReferencedOn
-import org.kepler42.models.*
 import org.jetbrains.exposed.sql.SortOrder
+import org.kepler42.models.Community
+import org.kepler42.models.CommunityType
 
 // Object is the representation of communities table
 object CommunitiesTable : IntIdTable("communities") {

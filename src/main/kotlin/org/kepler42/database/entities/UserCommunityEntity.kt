@@ -1,9 +1,10 @@
 package org.kepler42.database.entities
 
-import org.jetbrains.exposed.dao.*
+import org.jetbrains.exposed.dao.Entity
+import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.kepler42.models.*
+import org.kepler42.models.UserCommunity
 
 // object that represents a table from the database
 object UsersCommunities : IntIdTable("communities_followers") {

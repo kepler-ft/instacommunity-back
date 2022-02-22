@@ -1,6 +1,5 @@
 package org.kepler42.routes
 
-import com.google.firebase.auth.FirebaseAuth
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
@@ -16,7 +15,6 @@ import org.kepler42.models.User
 import org.kepler42.utils.TokenValidator
 import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
-import java.lang.IllegalArgumentException
 
 private fun invalidName(name: String?) =
     when {

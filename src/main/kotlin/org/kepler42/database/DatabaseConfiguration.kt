@@ -1,10 +1,8 @@
 package org.kepler42.database
 
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
-
 import io.ktor.application.*
 import org.flywaydb.core.Flyway
+import org.jetbrains.exposed.sql.Database
 
 fun Application.configureDatabase() {
     val dbServer = System.getenv("DB_SERVER")

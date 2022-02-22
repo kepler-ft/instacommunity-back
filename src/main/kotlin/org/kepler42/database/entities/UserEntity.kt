@@ -1,9 +1,11 @@
 package org.kepler42.database.entities
 
-import org.jetbrains.exposed.dao.*
+import org.jetbrains.exposed.dao.Entity
+import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
-import org.kepler42.models.*
+import org.kepler42.models.Contact
+import org.kepler42.models.User
 
 // object is the representation of the Table users
 object UsersTable : IdTable<String>("users") {

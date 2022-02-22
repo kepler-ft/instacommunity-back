@@ -5,11 +5,10 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import io.ktor.utils.io.*
-import org.kepler42.controllers.*
 import org.kepler42.database.repositories.CommunityRepository
 import org.kepler42.errors.*
-import org.kepler42.models.*
+import org.kepler42.models.Community
+import org.kepler42.models.Contact
 import org.kepler42.utils.TokenValidator
 import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject

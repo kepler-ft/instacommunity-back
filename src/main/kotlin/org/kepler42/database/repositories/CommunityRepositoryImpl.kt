@@ -1,14 +1,14 @@
 package org.kepler42.database.repositories
 
-import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-
-import org.kepler42.models.*
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.kepler42.database.entities.*
+import org.kepler42.database.repositories.utils.insensitiveLike
 import org.kepler42.errors.InvalidBodyException
-import org.kepler42.database.repositories.utils.*
+import org.kepler42.models.Community
+import org.kepler42.models.Contact
+import org.kepler42.models.User
 
 interface CommunityRepository {
     fun search(name: String? = null,  tags: List<Int>? = null): List<Community>?

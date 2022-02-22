@@ -2,7 +2,7 @@ package org.kepler42
 
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import org.kepler42.database.*
+import org.kepler42.database.configureDatabase
 import org.kepler42.plugins.*
 
 fun main() {

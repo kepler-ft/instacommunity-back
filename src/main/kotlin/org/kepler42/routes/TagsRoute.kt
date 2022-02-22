@@ -1,13 +1,10 @@
 package org.kepler42.routes
 
 import io.ktor.application.*
-import io.ktor.http.*
-import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.kepler42.utils.getHttpCode
-import org.kepler42.controllers.*
 import org.kepler42.database.repositories.TagRepository
+import org.kepler42.utils.getHttpCode
 import org.koin.ktor.ext.inject
 
 fun Route.tagRoute() {
