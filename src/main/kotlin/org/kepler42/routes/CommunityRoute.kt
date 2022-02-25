@@ -11,6 +11,7 @@ import org.kepler42.models.Community
 import org.kepler42.models.Contact
 import org.kepler42.utils.TokenValidator
 import org.kepler42.utils.getHttpCode
+import org.kepler42.utils.sendErrorResponse
 import org.koin.ktor.ext.inject
 
 private fun nameIsValid(name: String) =
@@ -44,7 +45,7 @@ fun Route.communityRoute() {
                     call.respond(communities)
                 }
             } catch (e: Exception) {
-                call.respond(getHttpCode(e))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -56,7 +57,7 @@ fun Route.communityRoute() {
                     ?: throw ResourceNotFoundException("Community Not Found")
                 call.respond(community)
             } catch(e: Exception) {
-                call.respond(getHttpCode(e))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -73,7 +74,7 @@ fun Route.communityRoute() {
                 val response = communityRepository.insertFollower(userId, communityId)
                 call.respond(response)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -89,7 +90,7 @@ fun Route.communityRoute() {
                 communityRepository.deleteFollower(communityId.toInt(), userId)
                 call.respond(HttpStatusCode.OK)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -100,7 +101,7 @@ fun Route.communityRoute() {
                 val followers = communityRepository.fetchFollowers(communityId.toInt())
                 call.respond(followers ?: emptyList())
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -119,7 +120,7 @@ fun Route.communityRoute() {
                     communityRepository.updateCommunity(communityId, community) ?: throw ResourceNotFoundException("Community not found")
                 call.respond(updatedCommunity)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -147,7 +148,7 @@ fun Route.communityRoute() {
 
                 call.respond(createdCommunity)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -170,7 +171,7 @@ fun Route.communityRoute() {
                 call.respond(response)
             }
             catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -190,7 +191,7 @@ fun Route.communityRoute() {
                 call.respond(response)
             }
             catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -207,7 +208,7 @@ fun Route.communityRoute() {
                 call.respond(HttpStatusCode.OK)
             }
             catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
     }

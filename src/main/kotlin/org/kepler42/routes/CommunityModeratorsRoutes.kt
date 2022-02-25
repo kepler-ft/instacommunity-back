@@ -13,7 +13,7 @@ import org.kepler42.errors.OperationNotPermittedException
 import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.models.User
 import org.kepler42.utils.TokenValidator
-import org.kepler42.utils.getHttpCode
+import org.kepler42.utils.sendErrorResponse
 import org.koin.ktor.ext.inject
 
 fun Route.moderatorsRoutes() {
@@ -30,7 +30,7 @@ fun Route.moderatorsRoutes() {
                     ?: throw ResourceNotFoundException()
                 call.respond(moderators)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -54,7 +54,7 @@ fun Route.moderatorsRoutes() {
                 val result = communityRepository.insertModerator(communityId.toInt(), moderator.id!!)
                 call.respond(result)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -76,7 +76,7 @@ fun Route.moderatorsRoutes() {
                 communityRepository.deleteModerator(community.id, moderator.id!!)
                 call.respond(HttpStatusCode.OK)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
     }

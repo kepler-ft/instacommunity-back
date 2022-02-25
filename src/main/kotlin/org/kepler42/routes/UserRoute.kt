@@ -14,6 +14,7 @@ import org.kepler42.errors.UnauthorizedException
 import org.kepler42.models.User
 import org.kepler42.utils.TokenValidator
 import org.kepler42.utils.getHttpCode
+import org.kepler42.utils.sendErrorResponse
 import org.koin.ktor.ext.inject
 
 private fun invalidName(name: String?) =
@@ -39,7 +40,7 @@ fun Route.userRoute() {
                     call.respond(user)
                 }
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
         get("{id}") {
@@ -48,7 +49,7 @@ fun Route.userRoute() {
                 val user = userRepository.getUserById(id) ?: throw ResourceNotFoundException()
                 call.respond(user)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -72,7 +73,7 @@ fun Route.userRoute() {
                 else
                     throw UnauthorizedException()
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -89,7 +90,7 @@ fun Route.userRoute() {
                 val updatedUser = userRepository.changeUser(user) ?: throw ResourceNotFoundException()
                 call.respond(updatedUser)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
 
@@ -99,7 +100,7 @@ fun Route.userRoute() {
                 val communities = communityRepository.fetchCommunitiesFollowedByUser(id) ?: emptyList()
                 call.respond(communities)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e), mapOf("error" to e.message))
+                sendErrorResponse(call, e)
             }
         }
     }

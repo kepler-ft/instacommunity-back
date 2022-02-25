@@ -5,6 +5,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.kepler42.database.repositories.TagRepository
 import org.kepler42.utils.getHttpCode
+import org.kepler42.utils.sendErrorResponse
 import org.koin.ktor.ext.inject
 
 fun Route.tagRoute() {
@@ -15,7 +16,7 @@ fun Route.tagRoute() {
                 val tags = tagRepository.getAll()
                 call.respond(tags)
             } catch (e: Exception) {
-                call.respond(getHttpCode(e))
+                sendErrorResponse(call, e)
             }
         }
     }
