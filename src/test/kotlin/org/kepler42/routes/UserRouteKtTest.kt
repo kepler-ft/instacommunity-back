@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 
-package org.kepler42.routes;
+package org.kepler42.routes
 
 import io.kotest.matchers.equality.shouldBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
@@ -22,7 +22,6 @@ import org.kepler42.models.User
 import org.kepler42.plugins.configureRouting
 import org.kepler42.plugins.configureSerialization
 import org.kepler42.utils.TokenValidator
-import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.koin.ktor.ext.Koin
 import org.spekframework.spek2.Spek
@@ -74,11 +73,15 @@ object UserRouteTest : Spek({
         single { fakeCommunityRepository }
     }
 
+    fun setup(app: Application) {
+        app.install(Koin) { modules(testKoinModule) }
+        app.configureRouting()
+        app.configureSerialization()
+    }
+
     describe("User route") {
         it("should find Ada by her username") {
-            withTestApplication({
-                setupForTesting(this, testKoinModule)
-            }) {
+            withTestApplication({ setup(this) }) {
                 handleRequest(HttpMethod.Get, "/users?username=ada").apply {
                     response.content shouldNotBe null
                     val user = Json.decodeFromString<User>(response.content!!)
@@ -88,9 +91,7 @@ object UserRouteTest : Spek({
         }
 
         it("should find Roberto by his username") {
-            withTestApplication({
-                setupForTesting(this, testKoinModule)
-            }) {
+            withTestApplication({ setup(this) }) {
                 handleRequest(HttpMethod.Get, "/users?username=roberto-ti").apply {
                     response.content shouldNotBe null
                     val user = Json.decodeFromString<User>(response.content!!)
@@ -101,9 +102,7 @@ object UserRouteTest : Spek({
 
         // GET /users/08hfau389hdy3u2bfa
         it("should find Ada by her user id") {
-            withTestApplication({
-                setupForTesting(this, testKoinModule)
-            }) {
+            withTestApplication({ setup(this) }) {
                 handleRequest(HttpMethod.Get, "/users/batatinhafrita123").apply {
                     response.content shouldNotBe null
                     val user = Json.decodeFromString<User>(response.content!!)
@@ -113,9 +112,7 @@ object UserRouteTest : Spek({
         }
 
         it("should find Roberto by his user id") {
-            withTestApplication({
-                setupForTesting(this, testKoinModule)
-            }) {
+            withTestApplication({ setup(this) }) {
                 handleRequest(HttpMethod.Get, "/users/leavemealone").apply {
                     response.content shouldNotBe null
                     val user = Json.decodeFromString<User>(response.content!!)
@@ -125,9 +122,7 @@ object UserRouteTest : Spek({
         }
 
         it("should find Ada communities") {
-            withTestApplication({
-                setupForTesting(this, testKoinModule)
-            }) {
+            withTestApplication({ setup(this) }) {
                 handleRequest(HttpMethod.Get, "/users/batatinhafrita123/communities").apply {
                     response.content shouldNotBe null
                     val communities = Json.decodeFromString<MutableList<Community>>(response.content!!)
@@ -137,9 +132,7 @@ object UserRouteTest : Spek({
         }
 
         it("should find Roberto communities") {
-            withTestApplication({
-                setupForTesting(this, testKoinModule)
-            }) {
+            withTestApplication({ setup(this) }) {
                 handleRequest(HttpMethod.Get, "/users/leavemealone/communities").apply {
                     response.content shouldNotBe null
                     val communities = Json.decodeFromString<MutableList<Community>>(response.content!!)
@@ -147,11 +140,10 @@ object UserRouteTest : Spek({
                 }
             }
         }
+
         it("should return 404 when user is not found by it's id") {
-            withTestApplication({
-                setupForTesting(this, testKoinModule)
-            }) {
-                handleRequest(HttpMethod.Get, "/users/noid").apply {
+            withTestApplication({ setup(this) }) {
+                handleRequest(HttpMethod.Get, "/users/noOneId").apply {
                     val content = Json.decodeFromString<ErrorResponse>(response.content!!)
                     content.error shouldBe "This resource was not found"
                     response.status()?.value shouldBe 404
@@ -160,9 +152,7 @@ object UserRouteTest : Spek({
         }
 
         it("should return 404 when user is not found by it's username") {
-            withTestApplication({
-                setupForTesting(this, testKoinModule)
-            }) {
+            withTestApplication({ setup(this) }) {
                 handleRequest(HttpMethod.Get, "/users?username=no-one").apply {
                     val content = Json.decodeFromString<ErrorResponse>(response.content!!)
                     content.error shouldBe "This resource was not found"
@@ -170,8 +160,9 @@ object UserRouteTest : Spek({
                 }
             }
         }
+
         it("Should insert user into database") {
-            withTestApplication ({ setupForTesting(this, testKoinModule) }) {
+            withTestApplication ({ setup(this) }) {
                 val user = User("user-id", "Mary Jane", "mary", "Dummy user")
                 handleRequest(HttpMethod.Post, "/users") {
                     addHeader("Content-Type", "application/json")
@@ -184,8 +175,9 @@ object UserRouteTest : Spek({
                 verify { fakeUserRepository.insertUser(user)}
             }
         }
+
         it("should not insert user if id in auth token is different from id in request body") {
-            withTestApplication ({ setupForTesting(this, testKoinModule) }) {
+            withTestApplication ({ setup(this) }) {
                 val user = User("dummyid", "John Doe", "john-d", "Dummy user")
                 handleRequest(HttpMethod.Post, "/users") {
                     addHeader("Content-Type", "application/json")
@@ -197,7 +189,7 @@ object UserRouteTest : Spek({
         }
 
         it("should update user in the database") {
-            withTestApplication ({ setupForTesting(this, testKoinModule) }) {
+            withTestApplication ({ setup(this) }) {
                 val user = User("user-id", "John Doe", "john-d", "Dummy user")
                 handleRequest(HttpMethod.Put, "/users/user-id") {
                     addHeader("Content-Type", "application/json")
@@ -215,9 +207,3 @@ object UserRouteTest : Spek({
 
 @Serializable
 class ErrorResponse(val error: String)
-
-fun setupForTesting(app: Application, testKoinModule: Module) {
-    app.install(Koin) { modules(testKoinModule) }
-    app.configureRouting()
-    app.configureSerialization()
-}

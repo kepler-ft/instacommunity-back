@@ -2,7 +2,6 @@ package org.kepler42.utils
 
 import io.kotest.matchers.shouldBe
 import io.ktor.http.*
-import io.ktor.http.content.*
 import org.kepler42.errors.AlreadyRelatedException
 import org.kepler42.errors.ResourceNotFoundException
 import org.kepler42.errors.UnknownErrorException
